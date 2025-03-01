@@ -88,6 +88,47 @@ app.get('/api/city-prices', async (req, res) => {
   }
 });
 
+app.get('/api/price-items', async (req, res) => {
+  try {
+    const priceItemsResponse: { data: TPriceItem } = await axios.get(
+      `https://www.numbeo.com/api/price_items?api_key=${config.api_key}`,
+    );
+    res.json({
+      message: 'Retrieved price items data',
+      success: true,
+      statusCode: 200,
+      data: priceItemsResponse,
+    });
+  } catch (error) {
+    res.json({
+      message: 'Failed to Fetch price items.',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/exchange-rates', async (req, res) => {
+  try {
+    const exchangeRatesResponse: { data: { exchange_rates: TExchangeRates } } =
+      await axios.get(
+        `https://www.numbeo.com/api/currency_exchange_rates?api_key=${config.api_key}`,
+      );
+    res.json({
+      message: 'Retrieved exchange rate data',
+      success: true,
+      statusCode: 200,
+      data: exchangeRatesResponse,
+    });
+  } catch (error) {
+    res.json({
+      message: 'Failed to Fetch exchange rates',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
 app.listen(config.port, () =>
   console.log(`Dollarfar API running on port ${config.port}`),
 );
