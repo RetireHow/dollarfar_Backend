@@ -11,7 +11,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'https://resources.dollarfar.com'],
+    origin: ['http://localhost:5174', 'https://resources.dollarfar.com'],
     credentials: true,
   }),
 );
@@ -19,7 +19,7 @@ app.use(
 // Application Routes
 app.get('/', (req, res) => {
   res.json({
-    message: 'Welcome to Dollarfar API.',
+    message: 'Welcome to Dollarfar resources API.',
   });
 });
 
@@ -88,41 +88,188 @@ app.get('/api/city-prices', async (req, res) => {
   }
 });
 
-app.get('/api/price-items', async (req, res) => {
+app.get('/api/single-city-prices', async (req, res) => {
   try {
-    const priceItemsResponse: { data: TPriceItem } = await axios.get(
-      `https://www.numbeo.com/api/price_items?api_key=${config.api_key}`,
+    const { country, city, currency } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_prices?api_key=${config.api_key}&query=${city},${country}&currency=${currency}`,
     );
-    res.json({
-      message: 'Retrieved price items data',
+    return res.json({
+      message: 'Retrieved currency exchange rates',
       success: true,
       statusCode: 200,
-      data: priceItemsResponse,
+      data: apiResponse?.data,
     });
   } catch (error) {
     res.json({
-      message: 'Failed to Fetch price items.',
+      message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
     });
   }
 });
 
-app.get('/api/exchange-rates', async (req, res) => {
+app.get('/api/currency-exchange-rates', async (req, res) => {
   try {
-    const exchangeRatesResponse: { data: { exchange_rates: TExchangeRates } } =
-      await axios.get(
-        `https://www.numbeo.com/api/currency_exchange_rates?api_key=${config.api_key}`,
-      );
-    res.json({
-      message: 'Retrieved exchange rate data',
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/currency_exchange_rates?api_key=${config.api_key}`,
+    );
+    return res.json({
+      message: 'Retrieved currency exchange rates',
       success: true,
       statusCode: 200,
-      data: exchangeRatesResponse,
+      data: apiResponse?.data,
     });
   } catch (error) {
     res.json({
-      message: 'Failed to Fetch exchange rates',
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-cost-estimator', async (req, res) => {
+  try {
+    const { country, city, members, children, isRent, currency } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_cost_estimator?api_key=${config.api_key}&query=${city},${country}&household_members=${members}&children=${children}&include_rent=${isRent}&currency=${currency}`,
+    );
+    return res.json({
+      message: 'Retrieved city cost estimator',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/close-cities-with-prices', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/close_cities_with_prices?api_key=${config.api_key}&query=${city},${country}&min_contributors=2&max_distance=10000`,
+    );
+    return res.json({
+      message: 'Retrieved close cities',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-indices', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/indices?api_key=${config.api_key}&query=${city},${country}`,
+    );
+    return res.json({
+      message: 'Retrieved city indices',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-crime', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_crime?api_key=${config.api_key}&query=${city},${country}`,
+    );
+    return res.json({
+      message: 'Retrieved city crime data',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-healthcare', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_healthcare?api_key=${config.api_key}&query=${city},${country}`,
+    );
+    return res.json({
+      message: 'Retrieved city healthcare data',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-pollution', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_pollution?api_key=${config.api_key}&query=${city},${country}`,
+    );
+    return res.json({
+      message: 'Retrieved city pollution data',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/city-traffic', async (req, res) => {
+  try {
+    const { country, city } = req.query;
+    const apiResponse = await axios.get(
+      `https://www.numbeo.com/api/city_traffic?api_key=${config.api_key}&query=${city},${country}`,
+    );
+    return res.json({
+      message: 'Retrieved city pollution data',
+      success: true,
+      statusCode: 200,
+      data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
     });
