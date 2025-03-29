@@ -287,7 +287,7 @@ app.post('/api/send-email', async (req, res) => {
         statusCode: 400,
       });
     }
-    sendEmail(email, htmlMessage);
+    await sendEmail(email, htmlMessage);
     res.json({
       message: 'Sent email successfully.',
       success: true,
