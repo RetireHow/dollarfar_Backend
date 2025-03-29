@@ -1,9 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
-import { calculateLivingCosts } from './utils/calculateLivingCost';
 import config from './config';
-import { TCity, TExchangeRates, TPriceItem } from './types';
+import { sendEmail } from './utils/sendEmail';
 
 const app = express();
 
@@ -23,71 +22,6 @@ app.get('/', (req, res) => {
   });
 });
 
-app.get('/api/city-prices', async (req, res) => {
-  try {
-    const { city1, country1, city2, country2 } = req.query;
-
-    if (!city1 || !country1 || !city2 || !country2) {
-      return res.json({
-        message: 'Required params missing.',
-        success: false,
-        statusCode: 400,
-      });
-    }
-
-    const priceRes1: { data: TCity } = await axios.get(
-      `https://www.numbeo.com/api/city_prices?api_key=${config.api_key}&city=${city1}&country=${country1}`,
-    );
-
-    if (priceRes1?.data?.prices?.length == 0) {
-      return res.json({
-        message: `No information available for ${priceRes1?.data?.name}`,
-        success: false,
-        statusCode: 400,
-      });
-    }
-
-    const priceRes2: { data: TCity } = await axios.get(
-      `https://www.numbeo.com/api/city_prices?api_key=${config.api_key}&city=${city2}&country=${country2}`,
-    );
-
-    if (priceRes2?.data?.prices?.length == 0) {
-      return res.json({
-        message: `No information available for ${priceRes2?.data?.name}`,
-        success: false,
-        statusCode: 400,
-      });
-    }
-
-    const exchangeRatesResponse: { data: { exchange_rates: TExchangeRates } } =
-      await axios.get(
-        `https://www.numbeo.com/api/currency_exchange_rates?api_key=${config.api_key}`,
-      );
-    const priceItemsResponse: { data: TPriceItem } = await axios.get(
-      `https://www.numbeo.com/api/price_items?api_key=${config.api_key}`,
-    );
-
-    const modifiedCostData = calculateLivingCosts(
-      priceRes1?.data,
-      priceRes2?.data,
-      priceItemsResponse?.data,
-      exchangeRatesResponse?.data?.exchange_rates,
-    );
-    res.json({
-      message: 'Retrieved cost of living data',
-      success: true,
-      statusCode: 200,
-      data: modifiedCostData,
-    });
-  } catch (error) {
-    res.json({
-      message: 'Failed to Fetch City Prices.',
-      success: false,
-      statusCode: 400,
-    });
-  }
-});
-
 app.get('/api/single-city-prices', async (req, res) => {
   try {
     const { country, city, currency } = req.query;
@@ -95,7 +29,7 @@ app.get('/api/single-city-prices', async (req, res) => {
       `https://www.numbeo.com/api/city_prices?api_key=${config.api_key}&query=${city},${country}&currency=${currency}`,
     );
     return res.json({
-      message: 'Retrieved currency exchange rates',
+      message: 'Retrieved city prices',
       success: true,
       statusCode: 200,
       data: apiResponse?.data,
@@ -266,6 +200,99 @@ app.get('/api/city-traffic', async (req, res) => {
       success: true,
       statusCode: 200,
       data: apiResponse?.data,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+const htmlMessage = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download Confirmation - DollarFar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f4f4f4;
+    }
+    .email-container {
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .email-header {
+      background-color: #3498db;
+      color: white;
+      text-align: center;
+      padding: 20px;
+    }
+    .email-body {
+      padding: 20px;
+      color: #333;
+    }
+    .email-body h2 {
+      color: #333;
+    }
+    .email-body p {
+      font-size: 16px;
+      line-height: 1.5;
+    }
+    .email-footer {
+      background-color: #f4f4f4;
+      padding: 10px;
+      text-align: center;
+      color: #888;
+      font-size: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-container">
+    <div class="email-body">
+      <h2>Hello {{user_name}},</h2>
+      <p>We're glad to have you as a user of DollarFar!</p>
+
+      <p>Your download has been successfully completed.</p>
+
+      <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:support@dollarfar.com">support@dollarfar.com</a>.</p>
+
+      <p>Thank you for using DollarFar!</p>
+    </div>
+    <div class="email-footer">
+      <p>Best regards,<br>The DollarFar Team</p>
+    </div>
+  </div>
+</body>
+</html>`;
+
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) {
+      return res.json({
+        message: 'Please provide a valid email address!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+    sendEmail(email, htmlMessage);
+    res.json({
+      message: 'Sent email successfully.',
+      success: true,
+      statusCode: 200,
+      data: req.body,
     });
   } catch (error) {
     res.json({
