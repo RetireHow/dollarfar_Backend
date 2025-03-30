@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import config from '../config';
+
 export const sendEmail = async (to: string, html: string) => {
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com.',
@@ -7,7 +8,7 @@ export const sendEmail = async (to: string, html: string) => {
     secure: config.node_env === 'production',
     auth: {
       user: 'billal.webdev@gmail.com',
-      pass: 'wiqd amav ziun tcif',
+      pass: config.email_app_password,
     },
   });
 
