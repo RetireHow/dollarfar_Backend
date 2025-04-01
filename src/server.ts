@@ -279,7 +279,30 @@ const htmlMessage = `<!DOCTYPE html>
 
 app.post('/api/send-email', async (req, res) => {
   try {
-    const { email } = req.body || {};
+    const { name, email, phone } = req.body || {};
+    // Store into DB
+    const apiResponse = await axios.post(
+      'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
+      {
+        data: [
+          {
+            id: 'INCREMENT',
+            name,
+            email,
+            phone,
+          },
+        ],
+      },
+    );
+
+    if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
+      return res.json({
+        message: 'Failed to store user info into DB!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
     if (!email) {
       return res.json({
         message: 'Please provide a valid email address!',
