@@ -210,7 +210,41 @@ app.get('/api/city-traffic', async (req, res) => {
   }
 });
 
-const htmlMessage = `<!DOCTYPE html>
+app.post('/api/send-email', async (req, res) => {
+  try {
+    const { name, email, phone } = req.body || {};
+    // Store into DB
+    const apiResponse = await axios.post(
+      'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
+      {
+        data: [
+          {
+            id: 'INCREMENT',
+            name,
+            email,
+            phone,
+          },
+        ],
+      },
+    );
+
+    if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
+      return res.json({
+        message: 'Failed to store user info into DB!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
+    if (!email) {
+      return res.json({
+        message: 'Please provide a valid email address!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
+    const htmlMessage = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -261,7 +295,7 @@ const htmlMessage = `<!DOCTYPE html>
 <body>
   <div class="email-container">
     <div class="email-body">
-      <h2>Hello {{user_name}},</h2>
+      <h2>Hello ${name},</h2>
       <p>We're glad to have you as a user of DollarFar!</p>
 
       <p>Your download has been successfully completed.</p>
@@ -275,41 +309,7 @@ const htmlMessage = `<!DOCTYPE html>
     </div>
   </div>
 </body>
-</html>`;
-
-app.post('/api/send-email', async (req, res) => {
-  try {
-    const { name, email, phone } = req.body || {};
-    // Store into DB
-    const apiResponse = await axios.post(
-      'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
-      {
-        data: [
-          {
-            id: 'INCREMENT',
-            name,
-            email,
-            phone,
-          },
-        ],
-      },
-    );
-
-    if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
-      return res.json({
-        message: 'Failed to store user info into DB!',
-        success: false,
-        statusCode: 400,
-      });
-    }
-
-    if (!email) {
-      return res.json({
-        message: 'Please provide a valid email address!',
-        success: false,
-        statusCode: 400,
-      });
-    }
+                         </html>`;
     await sendEmail(email, htmlMessage);
     res.json({
       message: 'Sent email successfully.',
