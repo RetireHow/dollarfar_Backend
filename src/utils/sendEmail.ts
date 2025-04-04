@@ -3,12 +3,12 @@ import config from '../config';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.office365.com',
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: 'info@retirehow.com',
     pass: config.mail_pass,
-  },
+  }
 });
 
 export const sendEmail = async (to: string, html: string) => {
