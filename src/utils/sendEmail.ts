@@ -1,22 +1,22 @@
 import nodemailer from 'nodemailer';
 import config from '../config';
 
-export const sendEmail = async (to: string, html: string) => {
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com.',
-    port: 587,
-    secure: config.node_env === 'production',
-    auth: {
-      user: 'billal.webdev@gmail.com',
-      pass: config.email_app_password,
-    },
-  });
+const transporter = nodemailer.createTransport({
+  host: 'smtp.office365.com',
+  port: 465,
+  secure: true,
+  auth: {
+    user: 'info@retirehow.com',
+    pass: config.mail_pass,
+  },
+});
 
+export const sendEmail = async (to: string, html: string) => {
   await transporter.sendMail({
-    from: 'billal.webdev@gmail.com', // sender address
-    to, // list of receivers
-    subject: 'Thank you for downloading from DollarFar!', // Subject line
-    text: '', // plain text body
+    from: 'info@retirehow.com', // sender address
+    to,
+    subject: 'Thank you for downloading from DollarFar!',
+    text: '',
     html, // html body
   });
 };

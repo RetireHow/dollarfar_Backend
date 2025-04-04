@@ -212,29 +212,29 @@ app.get('/api/city-traffic', async (req, res) => {
 
 app.post('/api/send-email', async (req, res) => {
   try {
-    const { name, email, phone } = req.body || {};
+    const { name, email } = req.body || {};
     // Store into DB
-    const apiResponse = await axios.post(
-      'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
-      {
-        data: [
-          {
-            id: 'INCREMENT',
-            name,
-            email,
-            phone,
-          },
-        ],
-      },
-    );
+    // const apiResponse = await axios.post(
+    //   'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
+    //   {
+    //     data: [
+    //       {
+    //         id: 'INCREMENT',
+    //         name,
+    //         email,
+    //         phone,
+    //       },
+    //     ],
+    //   },
+    // );
 
-    if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
-      return res.json({
-        message: 'Failed to store user info into DB!',
-        success: false,
-        statusCode: 400,
-      });
-    }
+    // if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
+    //   return res.json({
+    //     message: 'Failed to store user info into DB!',
+    //     success: false,
+    //     statusCode: 400,
+    //   });
+    // }
 
     if (!email) {
       return res.json({
@@ -318,10 +318,12 @@ app.post('/api/send-email', async (req, res) => {
       data: req.body,
     });
   } catch (error) {
+    console.log("Email Sending Error ===> ", error)
     res.json({
       message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
+      error:error
     });
   }
 });
