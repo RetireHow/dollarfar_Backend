@@ -2,7 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import config from './config';
-import { sendEmail } from './utils/sendEmail';
+import sendEmailWtihZeptoApi from './utils/zeptoApiEmailSending';
+import mongoose, { model, Schema } from 'mongoose';
+
+// import path from 'path';
+// import fs from 'fs';
+
+// import { generatePDF, getBase64 } from './utils/generatePDF';
 
 const app = express();
 
@@ -14,6 +20,67 @@ app.use(
     credentials: true,
   }),
 );
+
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header(
+    'Access-Control-Allow-Headers',
+    'Origin, X-Requested-With, Content-Type, Accept',
+  );
+  next();
+});
+
+const userSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+    },
+    downloadedFiles: {
+      type: [String],
+      default: [],
+    },
+  },
+  { timestamps: true, versionKey: false },
+);
+
+const UserModel = model('User', userSchema);
+
+const adminSchema = new Schema(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+      unique: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { timestamps: true, versionKey: false },
+);
+
+const AdminModel = model('Admin', adminSchema);
 
 // Application Routes
 app.get('/', (req, res) => {
@@ -210,31 +277,10 @@ app.get('/api/city-traffic', async (req, res) => {
   }
 });
 
-app.post('/api/send-email', async (req, res) => {
+// Send Email
+app.post('/api/send-email-by-zeptoapi', async (req, res) => {
   try {
-    const { name, email } = req.body || {};
-    // Store into DB
-    // const apiResponse = await axios.post(
-    //   'https://sheetdb.io/api/v1/bkktvh0ar9ut8',
-    //   {
-    //     data: [
-    //       {
-    //         id: 'INCREMENT',
-    //         name,
-    //         email,
-    //         phone,
-    //       },
-    //     ],
-    //   },
-    // );
-
-    // if (apiResponse?.status !== 201 && apiResponse?.statusText !== 'Created') {
-    //   return res.json({
-    //     message: 'Failed to store user info into DB!',
-    //     success: false,
-    //     statusCode: 400,
-    //   });
-    // }
+    const { name, email, phone, downloadedFileName } = req.body || {};
 
     if (!email) {
       return res.json({
@@ -244,90 +290,151 @@ app.post('/api/send-email', async (req, res) => {
       });
     }
 
-    const htmlMessage = `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Download Confirmation - DollarFar</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f4f4;
-    }
-    .email-container {
-      width: 100%;
-      max-width: 600px;
-      margin: 0 auto;
-      background-color: #ffffff;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      overflow: hidden;
-    }
-    .email-header {
-      background-color: #3498db;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-    .email-body {
-      padding: 20px;
-      color: #333;
-    }
-    .email-body h2 {
-      color: #333;
-    }
-    .email-body p {
-      font-size: 16px;
-      line-height: 1.5;
-    }
-    .email-footer {
-      background-color: #f4f4f4;
-      padding: 10px;
-      text-align: center;
-      color: #888;
-      font-size: 12px;
-    }
-  </style>
-</head>
-<body>
-  <div class="email-container">
-    <div class="email-body">
-      <h2>Hello ${name},</h2>
-      <p>We're glad to have you as a user of DollarFar!</p>
+    // Generate PDF File
+    // const filePath = path.join(__dirname, 'output.pdf');
+    // const userData = {
+    //   name: 'John Doe',
+    //   orderId: '123456',
+    //   amount: '49.99',
+    // };
+    // await generatePDF(filePath, userData);
+    // const base64Pdf = getBase64(filePath);
+    //  // Optional: delete the file
+    //  fs.unlinkSync(filePath);
 
-      <p>Your download has been successfully completed.</p>
+    await UserModel.updateOne(
+      { email },
+      {
+        $setOnInsert: { name, email, phone },
+        $addToSet: { downloadedFiles: downloadedFileName },
+      },
+      { upsert: true },
+    );
 
-      <p>If you have any questions or need assistance, feel free to reach out to us at <a href="mailto:support@dollarfar.com">support@dollarfar.com</a>.</p>
+    const zeptoRes = await sendEmailWtihZeptoApi({
+      email,
+      name,
+      // base64Pdf,
+    });
 
-      <p>Thank you for using DollarFar!</p>
-    </div>
-    <div class="email-footer">
-      <p>Best regards,<br>The DollarFar Team</p>
-    </div>
-  </div>
-</body>
-                         </html>`;
-    await sendEmail(email, htmlMessage);
-    res.json({
+    if (zeptoRes.error) {
+      throw zeptoRes.error;
+    }
+
+    return res.json({
       message: 'Sent email successfully.',
       success: true,
       statusCode: 200,
       data: req.body,
     });
   } catch (error) {
-    console.log("Email Sending Error ===> ", error)
-    res.json({
+    res.status(400).json({
       message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
-      error:error
+      error: error,
     });
   }
 });
 
-app.listen(config.port, () =>
-  console.log(`Dollarfar API running on port ${config.port}`),
-);
+app.get('/api/pdf-downloaded-users', async (req, res) => {
+  try {
+    const usersData = await UserModel.find();
+    return res.json({
+      message: 'Retrieved users data',
+      success: true,
+      statusCode: 200,
+      data: usersData,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.post('/api/create-admin', async (req, res) => {
+  try {
+    const adminData = await AdminModel.create(req?.body);
+    return res.json({
+      message: 'Created a new admin successfully',
+      success: true,
+      statusCode: 200,
+      data: adminData,
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+      error,
+    });
+  }
+});
+
+app.get('/api/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const adminData = await AdminModel.findOne({ email, password });
+    if (!adminData) {
+      return res.json({
+        message: 'You are not authorized',
+        success: false,
+        statusCode: 400,
+      });
+    }
+    return res.json({
+      message: 'Retrieved admin data',
+      success: true,
+      statusCode: 200,
+      data: {
+        name: adminData?.name,
+        email: adminData?.email,
+      },
+    });
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.get('/api/cities', async (req, res) => {
+  try {
+    const { term } = req.query;
+    console.log('Term=======> ', term);
+    if (term) {
+      const apiResponse = await axios.get(
+        `https://www.numbeo.com/common/CitySearchJson?term=${term}`,
+      );
+      return res.json({
+        message: 'Retrieved cities data',
+        success: true,
+        statusCode: 200,
+        data: apiResponse?.data,
+      });
+    }
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+async function main() {
+  try {
+    await mongoose.connect(config.mongodb_url as string);
+    app.listen(config.port, () => {
+      console.log(`server is listening on port ${config.port}`);
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+main();

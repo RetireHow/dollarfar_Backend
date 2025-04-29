@@ -1,14 +1,12 @@
 import nodemailer from 'nodemailer';
-import config from '../config';
 
 const transporter = nodemailer.createTransport({
-  host: 'smtp.office365.com',
+  host: 'smtp.zeptomail.ca',
   port: 587,
-  secure: false,
   auth: {
-    user: 'info@retirehow.com',
-    pass: config.mail_pass,
-  }
+    user: 'emailapikey',
+    pass: 'MdLT53b1zcAhtEpGRwkHiSk2quBPNUMo+Tp3ie/3B+oos3cD5m6olM6sVs9JnSJaUXxIfsVBfNrOSD9YIgj2qxyS1k+DOPhGiCdVzzj+mDMoU89YqDqK+bMEPDppMkkb1KL0LCZ42wJqAg==',
+  },
 });
 
 export const sendEmail = async (to: string, html: string) => {
