@@ -4,6 +4,9 @@ import axios from 'axios';
 import config from './config';
 import sendEmailWtihZeptoApi from './utils/zeptoApiEmailSending';
 import mongoose, { model, Schema } from 'mongoose';
+import sendOTPMail from './utils/sendOTPMail';
+import crypto from 'crypto';
+import bcrypt from 'bcrypt';
 
 // import path from 'path';
 // import fs from 'fs';
@@ -30,6 +33,17 @@ app.use((req, res, next) => {
   next();
 });
 
+const downloadedFileSchema = new Schema(
+  {
+    downloadedFileName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+  },
+  { timestamps: true, _id: false }, // Disable _id if you don't need it for each file
+);
+
 const userSchema = new Schema(
   {
     name: {
@@ -49,7 +63,7 @@ const userSchema = new Schema(
       unique: true,
     },
     downloadedFiles: {
-      type: [String],
+      type: [downloadedFileSchema],
       default: [],
     },
   },
@@ -81,6 +95,17 @@ const adminSchema = new Schema(
 );
 
 const AdminModel = model('Admin', adminSchema);
+
+// ========================================== || OTP || =========================================
+const otpSchema = new mongoose.Schema(
+  {
+    email: { type: String, required: true },
+    otp: { type: String, required: true },
+    isVerified: { type: Boolean, default: false },
+  },
+  { timestamps: true },
+);
+const OTPModel = mongoose.model('Otp', otpSchema);
 
 // Application Routes
 app.get('/', (req, res) => {
@@ -306,7 +331,7 @@ app.post('/api/send-email-by-zeptoapi', async (req, res) => {
       { email },
       {
         $setOnInsert: { name, email, phone },
-        $addToSet: { downloadedFiles: downloadedFileName },
+        $addToSet: { downloadedFiles: { downloadedFileName } },
       },
       { upsert: true },
     );
@@ -357,12 +382,36 @@ app.get('/api/pdf-downloaded-users', async (req, res) => {
 
 app.post('/api/create-admin', async (req, res) => {
   try {
-    const adminData = await AdminModel.create(req?.body);
+    const { name, email, password } = req.body;
+
+    const existingAdmin = await AdminModel.findOne({ email });
+
+    //Check if admin already exist
+    if (existingAdmin) {
+      return res.json({
+        message: 'This user already exist!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
+    // hash password
+    const hashedPwd = await bcrypt.hash(password, 12);
+
+    const adminData = await AdminModel.create({
+      name,
+      email,
+      password: hashedPwd,
+    });
+
     return res.json({
       message: 'Created a new admin successfully',
       success: true,
       statusCode: 200,
-      data: adminData,
+      data: {
+        name: adminData.name,
+        email: adminData.email,
+      },
     });
   } catch (error) {
     res.json({
@@ -376,17 +425,34 @@ app.post('/api/create-admin', async (req, res) => {
 
 app.get('/api/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
-    const adminData = await AdminModel.findOne({ email, password });
+    const { email, password } = req.query;
+    const adminData = await AdminModel.findOne({ email });
+
+    //Check if user exists
     if (!adminData) {
       return res.json({
-        message: 'You are not authorized',
+        message: 'Admin not found!',
         success: false,
         statusCode: 400,
       });
     }
+
+    const matched = await bcrypt.compare(
+      password as string,
+      adminData?.password,
+    );
+
+    //check if password match
+    if (!matched) {
+      return res.json({
+        message: 'Password does not match!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
     return res.json({
-      message: 'Retrieved admin data',
+      message: 'Logged in successfully',
       success: true,
       statusCode: 200,
       data: {
@@ -406,7 +472,6 @@ app.get('/api/login', async (req, res) => {
 app.get('/api/cities', async (req, res) => {
   try {
     const { term } = req.query;
-    console.log('Term=======> ', term);
     if (term) {
       const apiResponse = await axios.get(
         `https://www.numbeo.com/common/CitySearchJson?term=${term}`,
@@ -420,6 +485,138 @@ app.get('/api/cities', async (req, res) => {
     }
   } catch (error) {
     res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+//OTP Routes
+app.post('/api/send-and-store-otp', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const existingUser = await AdminModel.findOne({ email });
+    if (!existingUser) {
+      return res.json({
+        message: 'User not found!',
+        success: false,
+        statusCode: 404,
+      });
+    }
+
+    const otp = crypto.randomInt(100000, 999999).toString();
+
+    const createdOTP = await OTPModel.findOneAndUpdate(
+      { email },
+      { email, otp, isVerified: false },
+      { upsert: true, new: true },
+    );
+
+    await sendOTPMail({
+      name: existingUser.name,
+      email: existingUser.email,
+      otp,
+    });
+    return res.json({
+      message: 'An OTP code is sent!',
+      success: true,
+      statusCode: 200,
+      data: createdOTP,
+    });
+  } catch (error) {
+    return res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+      error,
+    });
+  }
+});
+
+app.post('/api/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const existingUser = await AdminModel.findOne({ email });
+    if (!existingUser) {
+      return res.json({
+        message: 'User not found!',
+        success: false,
+        statusCode: 404,
+      });
+    }
+
+    const otpRecord = await OTPModel.findOne({ email, otp });
+
+    if (!otpRecord) {
+      return res.json({
+        message: 'Invalid OTP!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
+    const updatedOtp = await OTPModel.findByIdAndUpdate(
+      { _id: otpRecord._id },
+      { isVerified: true },
+      { new: true },
+    ); // Delete OTP after successful verification
+    return res.json({
+      message: 'OTP verified successfully!',
+      success: true,
+      statusCode: 200,
+      data: updatedOtp,
+    });
+  } catch (error) {
+    return res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
+});
+
+app.post('/api/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    const existingUser = await AdminModel.findOne({ email });
+    if (!existingUser) {
+      return res.json({
+        message: 'User not found!',
+        success: false,
+        statusCode: 404,
+      });
+    }
+
+    const otpRecord = await OTPModel.findOne({ email, otp, isVerified: true });
+
+    if (!otpRecord) {
+      return res.json({
+        message: 'Invalid OTP!',
+        success: false,
+        statusCode: 400,
+      });
+    }
+
+    // hash password
+    const hashedPwd = await bcrypt.hash(newPassword, 12);
+    await AdminModel.findByIdAndUpdate(
+      { _id: existingUser?._id },
+      { password: hashedPwd },
+    );
+
+    await OTPModel.deleteOne({ _id: otpRecord._id }); // Delete OTP after successful verification
+
+    return res.json({
+      message: 'Password reset successfully!',
+      success: true,
+      statusCode: 200,
+    });
+  } catch (error) {
+    return res.json({
       message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
