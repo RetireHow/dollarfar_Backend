@@ -7,6 +7,7 @@ import mongoose, { model, Schema } from 'mongoose';
 import sendOTPMail from './utils/sendOTPMail';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
+import sendEbookEmail from './utils/sendEbookEmail';
 
 // import path from 'path';
 // import fs from 'fs';
@@ -19,7 +20,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: ['http://localhost:5174', 'https://resources.dollarfar.com'],
+    origin: ['http://localhost:5174', 'https://dollarfar.com'],
     credentials: true,
   }),
 );
@@ -107,11 +108,71 @@ const otpSchema = new mongoose.Schema(
 );
 const OTPModel = mongoose.model('Otp', otpSchema);
 
+// ========================================== || Ebook Download || =========================================
+const ebookDownloadedUserSchema = new Schema(
+  {
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    mobile: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    ebookName: {
+      type: String,
+      trim: true,
+    },
+  },
+  { timestamps: true, versionKey: false },
+);
+
+const EbookDownloadedUserModel = model(
+  'EbookDownloadedUser',
+  ebookDownloadedUserSchema,
+);
+
 // Application Routes
 app.get('/', (req, res) => {
   res.json({
     message: 'Welcome to Dollarfar resources API.',
   });
+});
+
+// Numbeo Api Routes
+app.get('/api/cities', async (req, res) => {
+  try {
+    const { term } = req.query;
+    if (term) {
+      const apiResponse = await axios.get(
+        `https://www.numbeo.com/common/CitySearchJson?term=${term}`,
+      );
+      return res.json({
+        message: 'Retrieved cities data',
+        success: true,
+        statusCode: 200,
+        data: apiResponse?.data,
+      });
+    }
+  } catch (error) {
+    res.json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+    });
+  }
 });
 
 app.get('/api/single-city-prices', async (req, res) => {
@@ -302,7 +363,7 @@ app.get('/api/city-traffic', async (req, res) => {
   }
 });
 
-// Send Email
+// Pdf Report Download Routes
 app.post('/api/send-email-by-zeptoapi', async (req, res) => {
   try {
     const { name, email, phone, downloadedFileName } = req.body || {};
@@ -380,49 +441,7 @@ app.get('/api/pdf-downloaded-users', async (req, res) => {
   }
 });
 
-app.post('/api/create-admin', async (req, res) => {
-  try {
-    const { name, email, password } = req.body;
-
-    const existingAdmin = await AdminModel.findOne({ email });
-
-    //Check if admin already exist
-    if (existingAdmin) {
-      return res.json({
-        message: 'This user already exist!',
-        success: false,
-        statusCode: 400,
-      });
-    }
-
-    // hash password
-    const hashedPwd = await bcrypt.hash(password, 12);
-
-    const adminData = await AdminModel.create({
-      name,
-      email,
-      password: hashedPwd,
-    });
-
-    return res.json({
-      message: 'Created a new admin successfully',
-      success: true,
-      statusCode: 200,
-      data: {
-        name: adminData.name,
-        email: adminData.email,
-      },
-    });
-  } catch (error) {
-    res.json({
-      message: 'There is something went wrong!',
-      success: false,
-      statusCode: 400,
-      error,
-    });
-  }
-});
-
+//Auth Routes
 app.get('/api/login', async (req, res) => {
   try {
     const { email, password } = req.query;
@@ -469,30 +488,49 @@ app.get('/api/login', async (req, res) => {
   }
 });
 
-app.get('/api/cities', async (req, res) => {
+app.post('/api/create-admin', async (req, res) => {
   try {
-    const { term } = req.query;
-    if (term) {
-      const apiResponse = await axios.get(
-        `https://www.numbeo.com/common/CitySearchJson?term=${term}`,
-      );
+    const { name, email, password } = req.body;
+
+    const existingAdmin = await AdminModel.findOne({ email });
+
+    //Check if admin already exist
+    if (existingAdmin) {
       return res.json({
-        message: 'Retrieved cities data',
-        success: true,
-        statusCode: 200,
-        data: apiResponse?.data,
+        message: 'This user already exist!',
+        success: false,
+        statusCode: 400,
       });
     }
+
+    // hash password
+    const hashedPwd = await bcrypt.hash(password, 12);
+
+    const adminData = await AdminModel.create({
+      name,
+      email,
+      password: hashedPwd,
+    });
+
+    return res.json({
+      message: 'Created a new admin successfully',
+      success: true,
+      statusCode: 200,
+      data: {
+        name: adminData.name,
+        email: adminData.email,
+      },
+    });
   } catch (error) {
     res.json({
       message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
+      error,
     });
   }
 });
 
-//OTP Routes
 app.post('/api/send-and-store-otp', async (req, res) => {
   const { email } = req.body;
 
@@ -620,6 +658,38 @@ app.post('/api/reset-password', async (req, res) => {
       message: 'There is something went wrong!',
       success: false,
       statusCode: 400,
+    });
+  }
+});
+
+// Ebook Download Routes
+app.post('/api/sendEmailAndStoreEbookDownloadingUserInfo', async (req, res) => {
+  try {
+    const { fullName, email } = req.body;
+
+    await EbookDownloadedUserModel.create(req.body);
+
+    const zeptoRes = await sendEbookEmail({
+      email,
+      name:fullName,
+    });
+
+    if (zeptoRes.error) {
+      throw zeptoRes.error;
+    }
+
+    return res.json({
+      message: 'Sent ebook email successfully.',
+      success: true,
+      statusCode: 200,
+      data: req.body,
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: 'There is something went wrong!',
+      success: false,
+      statusCode: 400,
+      error: error,
     });
   }
 });
