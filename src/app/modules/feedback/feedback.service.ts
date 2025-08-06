@@ -1,10 +1,11 @@
+import httpStatus from 'http-status';
 import { TFeedback } from './feedback.interface';
 import { FeedbackModel } from './feedback.model';
+import AppError from '../../errors/AppError';
 
 const insertFeedbacksIntoDB = async (
   payload: { name: string; rating: number; city: string; comments: string }[],
 ) => {
-
   const feedbackData = await FeedbackModel.insertMany(payload);
   return feedbackData;
 };
@@ -22,6 +23,11 @@ const getFeedbacksFromDB = async () => {
 };
 
 const deleteFeedbackFromDB = async (id: string) => {
+  // check if the feedback exist
+  const isExist = await FeedbackModel.findById(id);
+  if (!isExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Feedback not found!');
+  }
   const feedbackData = await FeedbackModel.findByIdAndDelete(id);
   return feedbackData;
 };

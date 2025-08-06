@@ -13,4 +13,10 @@ router.get(
   EbookDownloadedUserControllers.getEbookDownloadedUsers,
 );
 
+router.post(
+  '/create-checkout-session',
+  EbookDownloadedUserControllers.createCheckoutSession,
+);
+router.get('/checkout-session', EbookDownloadedUserControllers.checkoutSession);
+
 export const EbookDownloadedUserRoutes = router;
