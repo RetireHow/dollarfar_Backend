@@ -11,6 +11,7 @@ export default {
   zepto_smpt_pass: process.env.ZEPTO_SMTP_PASS,
   zepto_api_token: process.env.ZEPTO_API_TOKEN,
   zepto_email_template_key: process.env.ZEPTO_EMAIL_TEMPLATE_KEY,
+  ebook_purchase_confirmation_email_template_key: process.env.EBOOK_PURCHASE_CONFIRMATION_EMAIL_TEMPLATE_KEY,
   zepto_email_template_key_ebook:
     process.env.ZEPTO_EMAIL_TEMPLATE_KEY_EBOOK_DOWNLOAD,
   zepto_api_url: process.env.ZEPTO_API_URL,
