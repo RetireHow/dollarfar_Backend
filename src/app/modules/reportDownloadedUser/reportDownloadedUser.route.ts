@@ -13,4 +13,9 @@ router.get(
   ReportDownloadedUserControllers.getReportDownloadedUsers,
 );
 
+router.delete(
+  '/delete-user',
+  ReportDownloadedUserControllers.deleteReportDownloadedUser,
+);
+
 export const ReportDownloadedUserRoutes = router;

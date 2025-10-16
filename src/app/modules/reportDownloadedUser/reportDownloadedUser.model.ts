@@ -1,16 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { TDownloadFile, TReportDownloadedUser } from './reportDownloadedUser.interface';
-
-const downloadedFileSchema = new Schema<TDownloadFile>(
-  {
-    downloadedFileName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  { timestamps: true, _id: false }, // Disable _id if you don't need it for each file
-);
+import { TReportDownloadedUser } from './reportDownloadedUser.interface';
 
 const reportDownloadedUserSchema = new Schema<TReportDownloadedUser>(
   {
@@ -28,14 +17,17 @@ const reportDownloadedUserSchema = new Schema<TReportDownloadedUser>(
       type: String,
       required: true,
       trim: true,
-      unique: true,
     },
-    downloadedFiles: {
-      type: [downloadedFileSchema],
-      default: [],
+    downloadedFileName: {
+      type: String,
+      required: true,
+      trim: true
     },
   },
   { timestamps: true, versionKey: false },
 );
 
-export const ReportDownloadedUserModel = model<TReportDownloadedUser>('ReportDownloadedUser', reportDownloadedUserSchema);
+export const ReportDownloadedUserModel = model<TReportDownloadedUser>(
+  'ReportDownloadedUser',
+  reportDownloadedUserSchema,
+);
