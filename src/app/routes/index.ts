@@ -5,6 +5,7 @@ import { AdminRoutes } from '../modules/admin/admin.route';
 import { ReportDownloadedUserRoutes } from '../modules/reportDownloadedUser/reportDownloadedUser.route';
 import { EbookDownloadedUserRoutes } from '../modules/ebookDownloadedUser/ebookDownloadedUser.route';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
+import { RetirementNextStepRoutes } from '../modules/retirementNextStep/retirementNextStep.route';
 
 const router = Router();
 
@@ -32,6 +33,10 @@ const moduleRoutes = [
   {
     path: '/feedbacks',
     route: FeedbackRoutes,
+  },
+  {
+    path: '/retirement-next-step',
+    route: RetirementNextStepRoutes,
   },
 ];
 
