@@ -28,7 +28,34 @@ const getRetirementPlanNotes = catchAsync(async (req, res) => {
   });
 });
 
+const removeRetirementPlanNotes = catchAsync(async (req, res) => {
+  const noteId = req.params.noteId;
+  const result =
+    await RetirementPlanNotesServices.removeRetirementPlanNotesFromDB(noteId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retirement Plan Notes is removed successfully.',
+    data: result,
+  });
+});
+
+const updateRetirementPlanNotes = catchAsync(async (req, res) => {
+  const result =
+    await RetirementPlanNotesServices.updateRetirementPlanNotesIntoDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retirement Plan Notes is updated successfully.',
+    data: result,
+  });
+});
+
 export const RetirementPlanNotesControllers = {
   createRetirementPlanNotes,
   getRetirementPlanNotes,
+  removeRetirementPlanNotes,
+  updateRetirementPlanNotes,
 };
