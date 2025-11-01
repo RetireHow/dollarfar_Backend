@@ -6,6 +6,8 @@ import { ReportDownloadedUserRoutes } from '../modules/reportDownloadedUser/repo
 import { EbookDownloadedUserRoutes } from '../modules/ebookDownloadedUser/ebookDownloadedUser.route';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
 import { RetirementNextStepRoutes } from '../modules/retirementNextStep/retirementNextStep.route';
+import { AndexRoutes } from '../modules/andex/andex.route';
+import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retirementPlanNotes.route';
 
 const router = Router();
 
@@ -37,6 +39,14 @@ const moduleRoutes = [
   {
     path: '/retirement-next-step',
     route: RetirementNextStepRoutes,
+  },
+  {
+    path: '/retirement-plan-notes',
+    route: RetirementPlanNotesRoutes,
+  },
+  {
+    path: '/andex',
+    route: AndexRoutes,
   },
 ];
 
