@@ -1,5 +1,3 @@
-import httpStatus from 'http-status';
-import AppError from '../../errors/AppError';
 import sendEbookEmail from '../../utils/sendEbookEmail';
 import { EbookDownloadedUserModel } from './ebookDownloadedUser.model';
 
@@ -10,6 +8,15 @@ const createEbookDownloadedUserIntoDB = async (
   city: string,
   ebookName: string,
 ) => {
+  const zeptoRes = await sendEbookEmail({
+    email,
+    name: fullName,
+  });
+
+  if (zeptoRes.error) {
+    throw zeptoRes.error;
+  }
+
   await EbookDownloadedUserModel.create({
     fullName,
     email,
@@ -17,15 +24,6 @@ const createEbookDownloadedUserIntoDB = async (
     city,
     ebookName,
   });
-
-  const zeptoRes = await sendEbookEmail({
-    email,
-    name: fullName,
-  });
-
-  if (zeptoRes.error) {
-    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, zeptoRes.error);
-  }
 
   return {
     fullName,

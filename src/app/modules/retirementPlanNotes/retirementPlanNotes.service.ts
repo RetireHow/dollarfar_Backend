@@ -12,7 +12,7 @@ const createRetirementPlanNotesIntoDB = async (
 
 const getRetirementPlanNotesFromDB = async (planId: string) => {
   const res = RetirementPlanNotesModel.find({ retirementPlan: planId })
-    .populate('retirementPlan')
+    // .populate('retirementPlan')
     .sort({ _id: -1 });
   return res;
 };

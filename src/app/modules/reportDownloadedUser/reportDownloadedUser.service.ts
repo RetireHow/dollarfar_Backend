@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import { ReportDownloadedUserModel } from './reportDownloadedUser.model';
-import sendEmailWtihZeptoApi from '../../utils/zeptoApiEmailSending';
 
 type TReportDownloadedUser = {
   name: string;
@@ -13,21 +12,17 @@ type TReportDownloadedUser = {
 const createReportDownloadedUserIntoDB = async (
   payload: TReportDownloadedUser,
 ) => {
-  if (!payload.email) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Email is required!');
-  }
+  // const zeptoRes = await sendEmailWtihZeptoApi({
+  //   email: payload.email,
+  //   name: payload.name,
+  //   // base64Pdf,
+  // });
+
+  // if (zeptoRes.error) {
+  //   throw zeptoRes.error;
+  // }
 
   await ReportDownloadedUserModel.create(payload);
-
-  const zeptoRes = await sendEmailWtihZeptoApi({
-    email: payload.email,
-    name: payload.name,
-    // base64Pdf,
-  });
-
-  if (zeptoRes.error) {
-    throw zeptoRes.error
-  }
 
   return {
     email: payload.email,
