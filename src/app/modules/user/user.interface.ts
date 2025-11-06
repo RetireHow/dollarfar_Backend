@@ -1,0 +1,39 @@
+/* eslint-disable no-unused-vars */
+import { Model } from 'mongoose';
+import { USER_ROLE } from './user.constant';
+
+// superAdmin → manages everything (admins, users, dashboard)
+
+// admin → manages user-submitted data
+
+// moderator → read-only dashboard access
+
+// user → normal site visitor / data submitter
+
+export interface TUser {
+  id: string;
+  name:string;
+  email: string;
+  password: string;
+  needsPasswordChange: boolean;
+  passwordChangedAt?: Date;
+  role: 'superAdmin' | 'admin' | 'moderator' | 'user';
+  status: 'in-progress' | 'blocked';
+  isDeleted: boolean;
+}
+
+export interface UserModel extends Model<TUser> {
+  //instance methods for checking if the user exist
+  isUserExistsByCustomId(id: string): Promise<TUser>;
+  //instance methods for checking if passwords are matched
+  isPasswordMatched(
+    plainTextPassword: string,
+    hashedPassword: string,
+  ): Promise<boolean>;
+  isJWTIssuedBeforePasswordChanged(
+    passwordChangedTimestamp: Date,
+    jwtIssuedTimestamp: number,
+  ): boolean;
+}
+
+export type TUserRole = keyof typeof USER_ROLE;
