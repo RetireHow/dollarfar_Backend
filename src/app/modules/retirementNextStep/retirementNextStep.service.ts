@@ -6,7 +6,7 @@ const createRetirementNextStepIntoDB = async (payload: TRetirementNextStep) => {
   const zeptoRes = await sendZeptoEmail({
     templateKey:
       '3b2f8.24630c2170da85ea.k1.ea908f10-bad8-11f0-9a59-1ad0b05a72f3.19a57d45a81',
-    to: [{ address: 'billalhossain.webdev@gmail.com', name: 'Billal Hossain' }],
+    to: [{ address: 'rao.movva@retirehow.com', name: 'Rao Movva' }],
     mergeInfo: {
       name: payload.full_name,
       email: payload.email,
