@@ -4,8 +4,8 @@ import sendResponse from '../../utils/sendResponse';
 import { EbookDownloadedUserServices } from './ebookDownloadedUser.service';
 import Stripe from 'stripe';
 import config from '../../config';
-import sendEbookPurchaseConfirmationMail from '../../utils/sendEbookPurchaseConfirmationMail';
 import AppError from '../../errors/AppError';
+import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
 
 const stripe = new Stripe(config.stripe_secret_key as string);
 
@@ -78,16 +78,25 @@ const checkoutSession = catchAsync(async (req, res) => {
       session,
       success: true,
     });
-    const zeptoRes = await sendEbookPurchaseConfirmationMail({
-      name: session?.customer_details?.name as string,
-      email: session?.customer_details?.email as string,
-      transaction_id: session?.payment_intent as string,
-      purchase_date: new Date(),
+    const zeptoRes = await sendZeptoEmail({
+      templateKey:
+        config.ebook_purchase_confirmation_email_template_key as string,
+      to: [
+        {
+          address: session?.customer_details?.email as string,
+          name: session?.customer_details?.name as string,
+        },
+      ],
+      mergeInfo: {
+        name: session?.customer_details?.name,
+        transaction_id: session?.payment_intent,
+        purchase_date: new Date(),
+      },
     });
+
     if (zeptoRes.error) {
       throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, zeptoRes.error);
     }
-    
   } else {
     res.status(403).json({ error: 'Payment not completed' });
   }

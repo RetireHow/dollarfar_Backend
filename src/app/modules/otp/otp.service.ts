@@ -3,8 +3,9 @@ import AppError from '../../errors/AppError';
 import { AdminModel } from '../admin/admin.model';
 import { OTPModel } from './otp.model';
 import crypto from 'crypto';
-import sendOTPMail from '../../utils/sendOTPMail';
 import bcrypt from 'bcrypt';
+import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
+import config from '../../config';
 
 const sendOTPMailFromDB = async (email: string) => {
   const existingUser = await AdminModel.findOne({ email });
@@ -20,11 +21,18 @@ const sendOTPMailFromDB = async (email: string) => {
     { upsert: true, new: true },
   );
 
-  await sendOTPMail({
-    name: existingUser.name,
-    email: existingUser.email,
-    otp,
+  // Send OTP Mail
+  const zeptoRes = await sendZeptoEmail({
+    templateKey: config.zepto_email_template_key_otp as string,
+    to: [{ address: email, name: existingUser.name }],
+    mergeInfo: {
+      name: existingUser.name,
+      otp: otp,
+    },
   });
+  if (zeptoRes.error) {
+    throw zeptoRes.error;
+  }
 
   return createdOTP;
 };

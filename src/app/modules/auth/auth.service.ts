@@ -3,7 +3,6 @@ import httpStatus from 'http-status';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../../errors/AppError';
-import { sendEmail } from '../../utils/sendEmail';
 import { TLoginUser } from './auth.interface';
 import { createToken, verifyToken } from './auth.utils';
 import { User } from '../user/user.model';
@@ -196,8 +195,6 @@ const forgetPassword = async (userId: string) => {
   );
 
   const resetUILink = `${config.reset_pass_ui_link}?id=${user.id}&token=${resetToken} `;
-
-  sendEmail(user.email, resetUILink);
 
   console.log(resetUILink);
 };

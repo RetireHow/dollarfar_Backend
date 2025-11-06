@@ -1,4 +1,5 @@
-import sendEbookEmail from '../../utils/sendEbookEmail';
+import config from '../../config';
+import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
 import { EbookDownloadedUserModel } from './ebookDownloadedUser.model';
 
 const createEbookDownloadedUserIntoDB = async (
@@ -8,9 +9,12 @@ const createEbookDownloadedUserIntoDB = async (
   city: string,
   ebookName: string,
 ) => {
-  const zeptoRes = await sendEbookEmail({
-    email,
-    name: fullName,
+  const zeptoRes = await sendZeptoEmail({
+    templateKey: config.zepto_email_template_key_ebook as string,
+    to: [{ address: email, name: fullName }],
+    mergeInfo: {
+      name: fullName,
+    },
   });
 
   if (zeptoRes.error) {

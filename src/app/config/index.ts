@@ -20,6 +20,8 @@ export default {
     process.env
       .ZEPTO_EMAIL_TEMPLATE_KEY_RETIREMENT_PLAN_SUBMISSION_NOTIFICATION,
 
+  zepto_email_template_key_otp: process.env.ZEPTO_EMAIL_TEMPLATE_KEY_OTP,
+
   zepto_api_url: process.env.ZEPTO_API_URL,
   mongodb_url: process.env.DATABASE_URL,
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,
