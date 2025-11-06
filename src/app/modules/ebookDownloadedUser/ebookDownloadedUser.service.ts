@@ -1,4 +1,3 @@
-import config from '../../config';
 import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
 import { EbookDownloadedUserModel } from './ebookDownloadedUser.model';
 
@@ -10,7 +9,7 @@ const createEbookDownloadedUserIntoDB = async (
   ebookName: string,
 ) => {
   const zeptoRes = await sendZeptoEmail({
-    templateKey: config.zepto_email_template_key_ebook as string,
+    templateKey: '3b2f8.24630c2170da85ea.k1.78f648a0-3544-11f0-a9b9-1ad0b05a72f3.196ec668a2a',
     to: [{ address: email, name: fullName }],
     mergeInfo: {
       name: fullName,

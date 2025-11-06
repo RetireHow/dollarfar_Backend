@@ -5,7 +5,6 @@ import { OTPModel } from './otp.model';
 import crypto from 'crypto';
 import bcrypt from 'bcrypt';
 import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
-import config from '../../config';
 
 const sendOTPMailFromDB = async (email: string) => {
   const existingUser = await AdminModel.findOne({ email });
@@ -23,7 +22,8 @@ const sendOTPMailFromDB = async (email: string) => {
 
   // Send OTP Mail
   const zeptoRes = await sendZeptoEmail({
-    templateKey: config.zepto_email_template_key_otp as string,
+    templateKey:
+      '3b2f8.24630c2170da85ea.k1.ed955e60-15f7-11f0-b652-2655081e6903.1961f478746',
     to: [{ address: email, name: existingUser.name }],
     mergeInfo: {
       name: existingUser.name,

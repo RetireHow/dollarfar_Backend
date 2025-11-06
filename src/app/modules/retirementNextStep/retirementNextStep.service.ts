@@ -1,12 +1,11 @@
 import { RetirementNextStepModel } from './retirementNextStep.model';
 import { TRetirementNextStep } from './retirementNextStep.interface';
 import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
-import config from '../../config';
 
 const createRetirementNextStepIntoDB = async (payload: TRetirementNextStep) => {
   const zeptoRes = await sendZeptoEmail({
     templateKey:
-      config.zepto_email_template_key_retirement_plan_submission_notification as string,
+      '3b2f8.24630c2170da85ea.k1.ea908f10-bad8-11f0-9a59-1ad0b05a72f3.19a57d45a81',
     to: [{ address: 'billalhossain.webdev@gmail.com', name: 'Billal Hossain' }],
     mergeInfo: {
       name: payload.full_name,

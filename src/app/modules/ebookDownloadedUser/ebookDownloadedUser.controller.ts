@@ -78,9 +78,10 @@ const checkoutSession = catchAsync(async (req, res) => {
       session,
       success: true,
     });
+
     const zeptoRes = await sendZeptoEmail({
       templateKey:
-        config.ebook_purchase_confirmation_email_template_key as string,
+        '3b2f8.24630c2170da85ea.k1.1741e390-72b0-11f0-aac3-ee3032389deb.1987eecd849',
       to: [
         {
           address: session?.customer_details?.email as string,
