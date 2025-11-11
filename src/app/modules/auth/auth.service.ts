@@ -67,8 +67,8 @@ const logoutUserFromDB = async (req: Request, res: Response) => {
   // 2️⃣ Remove the refresh token cookie from browser
   res.cookie('refreshToken', '', {
     httpOnly: true,
-    secure: config.node_env === 'production', // HTTPS in prod
-    sameSite: config.node_env === 'production' ? 'none' : 'lax', // cross-origin safe
+    secure: true,
+    sameSite: 'none',
     expires: new Date(0),
   });
   return null;

@@ -19,8 +19,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
     origin: [
-      'http://localhost:5174',
       'https://dollarfar.com',
+      'http://localhost:5174',
     ],
     credentials: true,
   }),
