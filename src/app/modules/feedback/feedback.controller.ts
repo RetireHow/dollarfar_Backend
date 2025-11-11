@@ -14,8 +14,8 @@ const createFeedback = catchAsync(async (req, res) => {
   });
 });
 
-const getFeedbacks = catchAsync(async (req, res) => {
-  const result = await FeedbackServices.getFeedbacksFromDB();
+const getAllFeedbacks = catchAsync(async (req, res) => {
+  const result = await FeedbackServices.getAllFeedbacksFromDB();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -25,31 +25,9 @@ const getFeedbacks = catchAsync(async (req, res) => {
   });
 });
 
-const clearAllFeedbacks = catchAsync(async (req, res) => {
-  const result = await FeedbackServices.clearAllFeedbacksFromDB();
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Feedbacks are cleared successfully.',
-    data: result,
-  });
-});
-
 const deleteFeedback = catchAsync(async (req, res) => {
-  const { id } = req.query;
-  const result = await FeedbackServices.deleteFeedbackFromDB(id as string);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Feedback is deleted successfully.',
-    data: result,
-  });
-});
-
-const insertFeedbacks = catchAsync(async (req, res) => {
-  const result = await FeedbackServices.insertFeedbacksIntoDB(req.body);
+  const { id } = req.params;
+  const result = await FeedbackServices.deleteFeedbackFromDB(id);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -61,8 +39,6 @@ const insertFeedbacks = catchAsync(async (req, res) => {
 
 export const FeedbackControllers = {
   createFeedback,
-  getFeedbacks,
-  insertFeedbacks,
   deleteFeedback,
-  clearAllFeedbacks,
+  getAllFeedbacks,
 };

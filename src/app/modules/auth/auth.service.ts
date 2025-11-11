@@ -1,21 +1,26 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import bcrypt from 'bcrypt';
 import httpStatus from 'http-status';
-import jwt, { JwtPayload } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../../errors/AppError';
 import { TLoginUser } from './auth.interface';
 import { createToken, verifyToken } from './auth.utils';
 import { User } from '../user/user.model';
+import crypto from 'crypto';
+import { OTPModel } from '../otp/otp.model';
+import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
+import mongoose from 'mongoose';
+import { Request, Response } from 'express';
 
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
-  const user = await User.isUserExistsByCustomId(payload.id);
+  const user = await User.findOne({ email: payload.email }).select('+password');
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
   }
-  // checking if the user is already deleted
 
+  // checking if the user is already deleted
   const isDeleted = user?.isDeleted;
 
   if (isDeleted) {
@@ -23,22 +28,19 @@ const loginUser = async (payload: TLoginUser) => {
   }
 
   // checking if the user is blocked
-
   const userStatus = user?.status;
 
   if (userStatus === 'blocked') {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
+    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked !');
   }
 
   //checking if the password is correct
-
   if (!(await User.isPasswordMatched(payload?.password, user?.password)))
-    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
+    throw new AppError(httpStatus.FORBIDDEN, 'Password does not match');
 
   //create token and sent to the  client
-
   const jwtPayload = {
-    userId: user.id,
+    userId: user._id,
     role: user.role,
   };
 
@@ -61,55 +63,14 @@ const loginUser = async (payload: TLoginUser) => {
   };
 };
 
-const changePassword = async (
-  userData: JwtPayload,
-  payload: { oldPassword: string; newPassword: string },
-) => {
-  // checking if the user is exist
-  const user = await User.isUserExistsByCustomId(userData.userId);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
-  }
-  // checking if the user is already deleted
-
-  const isDeleted = user?.isDeleted;
-
-  if (isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
-  }
-
-  // checking if the user is blocked
-
-  const userStatus = user?.status;
-
-  if (userStatus === 'blocked') {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
-  }
-
-  //checking if the password is correct
-
-  if (!(await User.isPasswordMatched(payload.oldPassword, user?.password)))
-    throw new AppError(httpStatus.FORBIDDEN, 'Password do not matched');
-
-  //hash new password
-  const newHashedPassword = await bcrypt.hash(
-    payload.newPassword,
-    Number(config.bcrypt_salt_rounds),
-  );
-
-  await User.findOneAndUpdate(
-    {
-      id: userData.userId,
-      role: userData.role,
-    },
-    {
-      password: newHashedPassword,
-      needsPasswordChange: false,
-      passwordChangedAt: new Date(),
-    },
-  );
-
+const logoutUserFromDB = async (req: Request, res: Response) => {
+  // 2️⃣ Remove the refresh token cookie from browser
+  res.cookie('refreshToken', '', {
+    httpOnly: true,
+    secure: config.node_env === 'production', // HTTPS in prod
+    sameSite: config.node_env === 'production' ? 'none' : 'lax', // cross-origin safe
+    expires: new Date(0),
+  });
   return null;
 };
 
@@ -120,11 +81,12 @@ const refreshToken = async (token: string) => {
   const { userId, iat } = decoded;
 
   // checking if the user is exist
-  const user = await User.isUserExistsByCustomId(userId);
+  const user = await User.findById(userId);
 
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
   }
+
   // checking if the user is already deleted
   const isDeleted = user?.isDeleted;
 
@@ -147,7 +109,7 @@ const refreshToken = async (token: string) => {
   }
 
   const jwtPayload = {
-    userId: user.id,
+    userId: user._id,
     role: user.role,
   };
 
@@ -162,102 +124,152 @@ const refreshToken = async (token: string) => {
   };
 };
 
-const forgetPassword = async (userId: string) => {
-  // checking if the user is exist
-  const user = await User.isUserExistsByCustomId(userId);
-
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
-  }
-  // checking if the user is already deleted
-  const isDeleted = user?.isDeleted;
-
-  if (isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
+const sendOTPMailFromDB = async (email: string) => {
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
   }
 
-  // checking if the user is blocked
-  const userStatus = user?.status;
+  const otp = crypto.randomInt(100000, 999999).toString();
 
-  if (userStatus === 'blocked') {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
-  }
-
-  const jwtPayload = {
-    userId: user.id,
-    role: user.role,
-  };
-
-  const resetToken = createToken(
-    jwtPayload,
-    config.jwt_access_secret as string,
-    '10m',
+  const createdOTP = await OTPModel.findOneAndUpdate(
+    { email },
+    { email, otp, isVerified: false },
+    { upsert: true, new: true },
   );
 
-  const resetUILink = `${config.reset_pass_ui_link}?id=${user.id}&token=${resetToken} `;
+  // Send OTP Mail
+  const zeptoRes = await sendZeptoEmail({
+    templateKey:
+      '3b2f8.24630c2170da85ea.k1.ed955e60-15f7-11f0-b652-2655081e6903.1961f478746',
+    to: [{ address: email, name: '' }],
+    mergeInfo: {
+      name: '',
+      otp: otp,
+    },
+  });
+  if (zeptoRes.error) {
+    throw zeptoRes.error;
+  }
 
-  console.log(resetUILink);
+  return createdOTP;
 };
 
-const resetPassword = async (
-  payload: { id: string; newPassword: string },
-  token: string,
+const verifyOTPFromDB = async (email: string, otpCode: string) => {
+  const existingUser = await User.findOne({ email });
+  if (!existingUser) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
+  }
+
+  const otpRecord = await OTPModel.findOne({ email, otp: otpCode });
+  if (!otpRecord) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid OTP!');
+  }
+
+  const updatedOtp = await OTPModel.findByIdAndUpdate(
+    { _id: otpRecord._id },
+    { isVerified: true },
+    { new: true },
+  ); // Delete OTP after successful verification
+  return updatedOtp;
+};
+
+const resetPasswordFromDB = async (
+  email: string,
+  otpCode: string,
+  newPassword: string,
 ) => {
-  // checking if the user is exist
-  const user = await User.isUserExistsByCustomId(payload?.id);
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
 
-  if (!user) {
-    throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
-  }
-  // checking if the user is already deleted
-  const isDeleted = user?.isDeleted;
+    // checking if the user is exist
+    const user = await User.findOne({ email })
+      .select('+password')
+      .session(session);
+    if (!user) {
+      throw new AppError(httpStatus.NOT_FOUND, 'This user is not found !');
+    }
 
-  if (isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
-  }
+    // checking if the user is already deleted
+    const isDeleted = user?.isDeleted;
+    if (isDeleted) {
+      throw new AppError(httpStatus.FORBIDDEN, 'This user is deleted !');
+    }
 
-  // checking if the user is blocked
-  const userStatus = user?.status;
+    // checking if the user is blocked
+    const userStatus = user?.status;
+    if (userStatus === 'blocked') {
+      throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
+    }
 
-  if (userStatus === 'blocked') {
-    throw new AppError(httpStatus.FORBIDDEN, 'This user is blocked ! !');
-  }
+    //hash the new password
+    const newHashedPassword = await bcrypt.hash(
+      newPassword,
+      Number(config.bcrypt_salt_rounds),
+    );
 
-  const decoded = jwt.verify(
-    token,
-    config.jwt_access_secret as string,
-  ) as JwtPayload;
+    const otpRecord = await OTPModel.findOne({ email, otp: otpCode }).session(
+      session,
+    );
+    if (!otpRecord) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Invalid OTP!');
+    }
 
-  //localhost:3000?id=A-0001&token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJBLTAwMDEiLCJyb2xlIjoiYWRtaW4iLCJpYXQiOjE3MDI4NTA2MTcsImV4cCI6MTcwMjg1MTIxN30.-T90nRaz8-KouKki1DkCSMAbsHyb9yDi0djZU3D6QO4
+    // Prevent using the same old password
+    if (await User.isPasswordMatched(newPassword, user.password)) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'New password must differ from the old one!',
+      );
+    }
 
-  if (payload.id !== decoded.userId) {
-    console.log(payload.id, decoded.userId);
-    throw new AppError(httpStatus.FORBIDDEN, 'You are forbidden!');
-  }
-
-  //hash new password
-  const newHashedPassword = await bcrypt.hash(
-    payload.newPassword,
-    Number(config.bcrypt_salt_rounds),
-  );
-
-  await User.findOneAndUpdate(
-    {
-      id: decoded.userId,
-      role: decoded.role,
-    },
-    {
+    // Update password (transaction-1)
+    const updateFields = {
       password: newHashedPassword,
       needsPasswordChange: false,
       passwordChangedAt: new Date(),
-    },
-  );
+    };
+    const updatedUser = await User.findOneAndUpdate(
+      { email: user.email },
+      updateFields,
+      { session, new: true, runValidators: true },
+    );
+
+    if (!updatedUser) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to update password !',
+      );
+    }
+
+    // Delete OTP (transaction-2)
+    const deletedOtp = await OTPModel.deleteOne({
+      _id: otpRecord._id,
+    }).session(session); // Delete OTP after successful verification
+
+    if (deletedOtp.deletedCount === 0) {
+      throw new AppError(
+        httpStatus.INTERNAL_SERVER_ERROR,
+        'Failed to delete OTP !',
+      );
+    }
+
+    await session.commitTransaction();
+    return null;
+  } catch (err: any) {
+    await session.abortTransaction();
+    throw new Error(err);
+  } finally {
+    session.endSession();
+  }
 };
 
 export const AuthServices = {
   loginUser,
-  changePassword,
   refreshToken,
-  forgetPassword,
-  resetPassword,
+  sendOTPMailFromDB,
+  verifyOTPFromDB,
+  resetPasswordFromDB,
+  logoutUserFromDB,
 };

@@ -1,15 +1,15 @@
 import express from 'express';
 import { EbookDownloadedUserControllers } from './ebookDownloadedUser.controller';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../user/user.constant';
 
 const router = express.Router();
 
-router.post(
-  '/create-user',
-  EbookDownloadedUserControllers.createEbookDownloadedUser,
-);
+router.post('/', EbookDownloadedUserControllers.createEbookDownloadedUser);
 
 router.get(
-  '/all-users',
+  '/',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   EbookDownloadedUserControllers.getEbookDownloadedUsers,
 );
 

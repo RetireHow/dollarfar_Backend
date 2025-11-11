@@ -14,13 +14,37 @@ const adminSchema = new Schema<TAdmin>(
       trim: true,
       unique: true,
     },
-    password: {
+    phone: {
       type: String,
       required: true,
       trim: true,
+    },
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    designation: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    profileImg: {
+      type: String,
+      default: '',
+    },
+    user: {
+      type: Schema.Types.ObjectId,
+      required: [true, 'User id is required'],
+      trim: true,
+      ref: 'User',
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true, versionKey: false },
 );
 
-export const AdminModel = model<TAdmin>('Admin', adminSchema);
+export const Admin = model<TAdmin>('Admin', adminSchema);

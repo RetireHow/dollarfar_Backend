@@ -7,11 +7,6 @@ import { TUser, UserModel } from './user.interface';
 
 const userSchema = new Schema<TUser, UserModel>(
   {
-    id: {
-      type: String,
-      required: true,
-      unique: true,
-    },
     email: {
       type: String,
       required: true,
@@ -31,7 +26,7 @@ const userSchema = new Schema<TUser, UserModel>(
     },
     role: {
       type: String,
-      enum: ['superAdmin', 'admin', 'moderator', 'user'],
+      enum: ['superAdmin', 'admin', 'moderator'],
     },
     status: {
       type: String,

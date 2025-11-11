@@ -2,11 +2,14 @@ import express from 'express';
 import { RetirementPlanNotesControllers } from './retirementPlanNotes.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { RetirementPlanNotesValidation } from './retirementPlanNotes.validation';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../user/user.constant';
 
 const router = express.Router();
 
 router.post(
-  '/create',
+  '/',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   validateRequest(
     RetirementPlanNotesValidation.createRetirementPlanNotesValidationSchema,
   ),
@@ -14,17 +17,20 @@ router.post(
 );
 
 router.get(
-  '/get/:planId',
+  '/:planId',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   RetirementPlanNotesControllers.getRetirementPlanNotes,
 );
 
 router.delete(
-  '/remove/:noteId',
+  '/:noteId',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   RetirementPlanNotesControllers.removeRetirementPlanNotes,
 );
 
 router.patch(
-  '/update',
+  '/',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   validateRequest(
     RetirementPlanNotesValidation.updateRetirementPlanNotesValidationSchema,
   ),

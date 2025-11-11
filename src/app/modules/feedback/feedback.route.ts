@@ -3,14 +3,10 @@ import { FeedbackControllers } from './feedback.controller';
 
 const router = express.Router();
 
-router.post('/create-feedback', FeedbackControllers.createFeedback);
+router.post('/', FeedbackControllers.createFeedback);
 
-router.get('/get-feedbacks', FeedbackControllers.getFeedbacks);
+router.get('/', FeedbackControllers.getAllFeedbacks);
 
-router.post('/insert-feedbacks', FeedbackControllers.insertFeedbacks);
-
-router.delete('/delete-feedback', FeedbackControllers.deleteFeedback);
-
-router.delete('/clear-feedbacks', FeedbackControllers.clearAllFeedbacks);
+router.delete('/:id', FeedbackControllers.deleteFeedback);
 
 export const FeedbackRoutes = router;

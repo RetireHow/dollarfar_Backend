@@ -3,44 +3,57 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { AdminServices } from './admin.service';
 
-const createAdmin = catchAsync(async (req, res) => {
-  const { name, email, password } = req.body;
-  const result = await AdminServices.createAdminIntoDB(name, email, password);
+const getSingleAdmin = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await AdminServices.getSingleAdminFromDB(id);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Admin is created successfully.',
+    message: 'Admin is retrieved succesfully',
     data: result,
   });
 });
 
-const loginAdmin = catchAsync(async (req, res) => {
-  const { email, password } = req.body;
-  const result = await AdminServices.loginAdminIntoDB(email, password);
+const getAllAdmins = catchAsync(async (req, res) => {
+  const result = await AdminServices.getAllAdminsFromDB();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Admin is logged in successfully.',
+    message: 'Admins are retrieved succesfully',
     data: result,
   });
 });
 
-const getAdminDetails = catchAsync(async (req, res) => {
-  const { email } = req.query;
-  const result = await AdminServices.getAdminDetailsFromDB(email as string);
+const updateAdmin = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { admin } = req.body;
+  const result = await AdminServices.updateAdminIntoDB(id, admin);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Admin details is retrieved successfully.',
+    message: 'Admin is updated succesfully',
+    data: result,
+  });
+});
+
+const deleteAdmin = catchAsync(async (req, res) => {
+  const { adminId } = req.params;
+  const result = await AdminServices.deleteAdminFromDB(adminId);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Admin is deleted succesfully',
     data: result,
   });
 });
 
 export const AdminControllers = {
-  createAdmin,
-  loginAdmin,
-  getAdminDetails,
+  getAllAdmins,
+  getSingleAdmin,
+  deleteAdmin,
+  updateAdmin,
 };

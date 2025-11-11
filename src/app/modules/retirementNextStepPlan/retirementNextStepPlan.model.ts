@@ -1,5 +1,5 @@
 import { model, Schema } from 'mongoose';
-import { TRetirementNextStep } from './retirementNextStep.interface';
+import { TRetirementNextStep } from './retirementNextStepPlan.interface';
 
 const retirementNextStepSchema = new Schema<TRetirementNextStep>(
   {

@@ -1,13 +1,14 @@
 import { Router } from 'express';
 import { NumbeoRoutes } from '../modules/numbeo/numbeo.route';
-import { OTPRoutes } from '../modules/otp/otp.route';
 import { AdminRoutes } from '../modules/admin/admin.route';
 import { ReportDownloadedUserRoutes } from '../modules/reportDownloadedUser/reportDownloadedUser.route';
 import { EbookDownloadedUserRoutes } from '../modules/ebookDownloadedUser/ebookDownloadedUser.route';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
-import { RetirementNextStepRoutes } from '../modules/retirementNextStep/retirementNextStep.route';
 import { AndexRoutes } from '../modules/andex/andex.route';
 import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retirementPlanNotes.route';
+import { UserRoutes } from '../modules/user/user.route';
+import { AuthRoutes } from '../modules/auth/auth.route';
+import { RetirementNextStepPlanRoutes } from '../modules/retirementNextStepPlan/retirementNextStepPlan.route';
 
 const router = Router();
 
@@ -17,11 +18,11 @@ const moduleRoutes = [
     route: NumbeoRoutes,
   },
   {
-    path: '/otp',
-    route: OTPRoutes,
+    path: '/users',
+    route: UserRoutes,
   },
   {
-    path: '/admin',
+    path: '/admins',
     route: AdminRoutes,
   },
   {
@@ -37,8 +38,8 @@ const moduleRoutes = [
     route: FeedbackRoutes,
   },
   {
-    path: '/retirement-next-step',
-    route: RetirementNextStepRoutes,
+    path: '/retirement-next-step-plans',
+    route: RetirementNextStepPlanRoutes,
   },
   {
     path: '/retirement-plan-notes',
@@ -47,6 +48,10 @@ const moduleRoutes = [
   {
     path: '/andex',
     route: AndexRoutes,
+  },
+  {
+    path: '/auth',
+    route: AuthRoutes,
   },
 ];
 

@@ -10,6 +10,7 @@ import handleZodError from '../errors/handleZodError';
 import { TErrorSources } from '../interfaces/error';
 import config from '../config';
 import handleZeptoMailError from '../errors/handleZeptoMailError';
+import { TokenExpiredError, JsonWebTokenError } from 'jsonwebtoken';
 
 const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
   //setting default values
@@ -42,6 +43,14 @@ const globalErrorHandler: ErrorRequestHandler = (err, req, res, next) => {
     statusCode = simplifiedError?.statusCode;
     message = simplifiedError?.message;
     errorSources = simplifiedError?.errorSources;
+  } else if (err instanceof TokenExpiredError) {
+    statusCode = 401;
+    message = 'Access token expired';
+    errorSources = [{ path: '', message }];
+  } else if (err instanceof JsonWebTokenError) {
+    statusCode = 401;
+    message = 'Invalid token';
+    errorSources = [{ path: '', message }];
   } else if (err instanceof AppError) {
     statusCode = err?.statusCode;
     message = err.message;

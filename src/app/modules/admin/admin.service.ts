@@ -1,69 +1,78 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
-import { AdminModel } from '../admin/admin.model';
-import bcrypt from 'bcrypt';
+import { Admin } from './admin.model';
+import { TAdmin } from './admin.interface';
+import mongoose from 'mongoose';
+import { User } from '../user/user.model';
 
-const createAdminIntoDB = async (
-  name: string,
-  email: string,
-  password: string,
-) => {
-  const existingAdmin = await AdminModel.findOne({ email });
-  if (existingAdmin) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'This admin already exist!');
+const getAllAdminsFromDB = async () => {
+  const result = await Admin.find({ isDeleted: false }).populate('user');
+  return result;
+};
+
+const getSingleAdminFromDB = async (id: string) => {
+  const result = await Admin.findById(id);
+  return result;
+};
+
+const updateAdminIntoDB = async (id: string, payload: Partial<TAdmin>) => {
+  // checking if the admin is exist
+  const admin = await Admin.findById(id);
+
+  if (!admin) {
+    throw new AppError(httpStatus.NOT_FOUND, 'This admin does not exist!');
   }
-  // hash password
-  const hashedPwd = await bcrypt.hash(password, 12);
 
-  const adminData = await AdminModel.create({
-    name,
-    email,
-    password: hashedPwd,
+  const result = await Admin.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
   });
-
-  return {
-    name: adminData.name,
-    email: adminData.email,
-  };
+  return result;
 };
 
-const loginAdminIntoDB = async (email: string, password: string) => {
-  const existingAdmin = await AdminModel.findOne({ email });
-  //   Check if user exist
-  if (!existingAdmin) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Admin not found!');
+const deleteAdminFromDB = async (adminId: string) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const deletedAdmin = await Admin.findByIdAndUpdate(
+      adminId,
+      { isDeleted: true },
+      { new: true, session },
+    );
+
+    if (!deletedAdmin) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete admin');
+    }
+
+    // get user _id from deletedAdmin
+    const userId = deletedAdmin.user;
+
+    const deletedUser = await User.findOneAndUpdate(
+      userId,
+      { isDeleted: true },
+      { new: true, session },
+    );
+
+    if (!deletedUser) {
+      throw new AppError(httpStatus.BAD_REQUEST, 'Failed to delete user');
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return deletedAdmin;
+  } catch (err: any) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new Error(err);
   }
-
-  const matched = await bcrypt.compare(
-    password as string,
-    existingAdmin?.password,
-  );
-
-  //check if password match
-  if (!matched) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Password does not match!');
-  }
-
-  return {
-    name: existingAdmin?.name,
-    email: existingAdmin?.email,
-  };
-};
-
-const getAdminDetailsFromDB = async (email: string) => {
-  const existingAdmin = await AdminModel.findOne({ email });
-  //   Check if user exist
-  if (!existingAdmin) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Admin not found!');
-  }
-  return {
-    name: existingAdmin?.name,
-    email: existingAdmin?.email,
-  };
 };
 
 export const AdminServices = {
-  createAdminIntoDB,
-  loginAdminIntoDB,
-  getAdminDetailsFromDB,
+  getAllAdminsFromDB,
+  getSingleAdminFromDB,
+  updateAdminIntoDB,
+  deleteAdminFromDB,
 };

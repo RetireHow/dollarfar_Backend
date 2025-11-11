@@ -10,7 +10,7 @@ const createRetirementPlanNotes = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Retirement Plan Notes is created successfully.',
+    message: 'Retirement Plan Note is created successfully.',
     data: result,
   });
 });
@@ -36,7 +36,7 @@ const removeRetirementPlanNotes = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Retirement Plan Notes is removed successfully.',
+    message: 'Retirement Plan Note is removed successfully.',
     data: result,
   });
 });
@@ -48,7 +48,7 @@ const updateRetirementPlanNotes = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Retirement Plan Notes is updated successfully.',
+    message: 'Retirement Plan Note is updated successfully.',
     data: result,
   });
 });

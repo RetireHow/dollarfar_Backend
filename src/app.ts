@@ -11,15 +11,15 @@ import router from './app/routes';
 
 const app: Application = express();
 
-//parsers
+//parser
 app.use(express.json());
 app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
     origin: [
       'http://localhost:5174',
-      'http://localhost:5173',
       'https://dollarfar.com',
     ],
     credentials: true,
