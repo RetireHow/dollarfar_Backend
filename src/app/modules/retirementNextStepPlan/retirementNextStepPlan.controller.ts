@@ -29,7 +29,20 @@ const getAllRetirementNextStepPlans = catchAsync(async (req, res) => {
   });
 });
 
+const createRetirementSubscriptionPayment = catchAsync(async (req, res) => {
+  const result =
+    await RetirementNextStepServices.createRetirementSubscriptionPaymentIntoDB();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retirement subscription payment is created successfully.',
+    data: result,
+  });
+});
+
 export const RetirementNextStepControllers = {
   createRetirementNextStepPlan,
   getAllRetirementNextStepPlans,
+  createRetirementSubscriptionPayment,
 };

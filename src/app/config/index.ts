@@ -8,7 +8,6 @@ export default {
   port: process.env.PORT,
 
   mongodb_url: process.env.DATABASE_URL,
-  stripe_secret_key: process.env.STRIPE_SECRET_KEY,
   fred_api_key: process.env.FRED_API_KEY,
 
   default_password: process.env.DEFAULT_PASS,
@@ -16,6 +15,10 @@ export default {
   reset_pass_ui_link: process.env.RESET_PASS_UI_LINK,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
   numbeo_api_key: process.env.NUMBEO_API_KEY,
+
+  // Stripe
+  stripe_secret_key: process.env.STRIPE_SECRET_KEY,
+  stripe_secret_key_test: process.env.STRIPE_SECRET_KEY_TEST,
 
   // Zepto Mail
   zepto_smpt_user: process.env.ZEPTO_SMTP_USER,
