@@ -63,7 +63,7 @@ const createCheckoutSession = catchAsync(async (req, res) => {
     success_url: `https://dollarfar.com/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `https://dollarfar.com/cancel`,
   });
-  res.json({ id: session.id });
+  res.json(session);
 });
 
 // Endpoint to retrieve session info and give access to book
