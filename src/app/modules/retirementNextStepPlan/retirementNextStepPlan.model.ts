@@ -3,7 +3,7 @@ import { TRetirementNextStep } from './retirementNextStepPlan.interface';
 
 const ContactInfoSchema = new Schema(
   {
-    full_name: {
+    name: {
       type: String,
       trim: true,
       required: true,

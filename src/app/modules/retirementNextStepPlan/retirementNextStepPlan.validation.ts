@@ -2,10 +2,10 @@ import { z } from 'zod';
 
 // Sub-schemas for nested objects
 const ContactInfoSchema = z.object({
-  full_name: z
+  name: z
     .string({
-      invalid_type_error: 'Full name must be string.',
-      required_error: 'Full name is required.',
+      invalid_type_error: 'Name must be string.',
+      required_error: 'Name is required.',
     })
     .trim(),
   phone: z
@@ -87,6 +87,31 @@ const createRetirementNextStepValidationSchema = z.object({
   }),
 });
 
+const createRetirementSubscriptionPaymentValidationSchema = z.object({
+  body: z.object({
+    name: z
+      .string({
+        invalid_type_error: 'Name must be string.',
+        required_error: 'Name is required.',
+      })
+      .trim(),
+    phone: z
+      .string({
+        invalid_type_error: 'Phone number must be string.',
+        required_error: 'Phone number is required.',
+      })
+      .trim(),
+    email: z
+      .string({
+        invalid_type_error: 'Email must be string.',
+        required_error: 'Email is required.',
+      })
+      .email('Invalid email address')
+      .trim(),
+    region: z.string().trim().optional(),
+  }),
+});
+
 // Update validation schema (all fields optional for partial updates)
 const updateRetirementNextStepValidationSchema =
   createRetirementNextStepValidationSchema.partial();
@@ -94,4 +119,5 @@ const updateRetirementNextStepValidationSchema =
 export const RetirementNextStepValidation = {
   createRetirementNextStepValidationSchema,
   updateRetirementNextStepValidationSchema,
+  createRetirementSubscriptionPaymentValidationSchema,
 };

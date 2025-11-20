@@ -31,8 +31,7 @@ const getAllRetirementNextStepPlans = catchAsync(async (req, res) => {
 
 const createRetirementSubscriptionPayment = catchAsync(async (req, res) => {
   const result =
-    await RetirementNextStepServices.createRetirementSubscriptionPaymentIntoDB();
-
+    await RetirementNextStepServices.createRetirementSubscriptionPaymentIntoDB(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

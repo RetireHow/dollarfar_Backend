@@ -1,7 +1,7 @@
 export type TContactInfo = {
-  full_name?: string;
-  phone?: string;
-  email?: string;
+  name: string;
+  phone: string;
+  email: string;
   region?: string;
 };
 

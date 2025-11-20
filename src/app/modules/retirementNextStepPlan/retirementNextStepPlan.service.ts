@@ -3,8 +3,12 @@ import { TRetirementNextStep } from './retirementNextStepPlan.interface';
 import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
 import Stripe from 'stripe';
 import config from '../../config';
+const stripe_sk =
+  config.node_env === 'development'
+    ? config.stripe_secret_key_test
+    : config.stripe_secret_key;
 
-const stripe = new Stripe(config.stripe_secret_key as string);
+const stripe = new Stripe(stripe_sk as string);
 
 const createRetirementNextStepPlanIntoDB = async (
   payload: TRetirementNextStep,
@@ -15,7 +19,7 @@ const createRetirementNextStepPlanIntoDB = async (
     // to: [{ address: 'rao.movva@retirehow.com', name: 'Rao Movva' }],
     to: [{ address: 'billalhossain.webdev@gmail.com', name: 'Billal Hossain' }],
     mergeInfo: {
-      name: payload.contact.full_name,
+      name: payload.contact.name,
       email: payload.contact.email,
       phone: payload.contact.phone,
       region: payload.contact.region,
@@ -34,7 +38,11 @@ const getAllRetirementNextStepPlansFromDB = async () => {
   return res;
 };
 
-const createRetirementSubscriptionPaymentIntoDB = async () => {
+const createRetirementSubscriptionPaymentIntoDB = async (payload: {
+  name: string;
+  email: string;
+  phone: string;
+}) => {
   const paymentIntent = await stripe.paymentIntents.create({
     amount: 19900, // $199.00 CAD in cents
     currency: 'cad',
@@ -46,6 +54,35 @@ const createRetirementSubscriptionPaymentIntoDB = async () => {
       description: '2 × 30-minute consultation sessions',
     },
   });
+
+  // Send confirmation email to user
+  const userZeptoRes = await sendZeptoEmail({
+    templateKey:
+      '3b2f8.24630c2170da85ea.k1.f569bc30-c5e7-11f0-bf33-ee3032389deb.19aa04ddf73', //User Notification
+    to: [{ address: payload.email, name: payload.name }],
+    mergeInfo: {
+      name: payload.name,
+    },
+  });
+  if (userZeptoRes.error) {
+    throw userZeptoRes.error;
+  }
+
+  // Send confirmation email to financial advisor
+  const advisorZeptoRes = await sendZeptoEmail({
+    templateKey:
+      '3b2f8.24630c2170da85ea.k1.af6e6ea0-c5e8-11f0-bf33-ee3032389deb.19aa052a28a', //Financial Advisor Notification
+    // to: [{ address: 'rao.movva@retirehow.com', name: 'Rao Movva' }],
+    to: [{ address: 'billalhossain.webdev@gmail.com', name: 'Billal Hossain' }],
+    mergeInfo: {
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+    },
+  });
+  if (advisorZeptoRes.error) {
+    throw advisorZeptoRes.error;
+  }
 
   return {
     clientSecret: paymentIntent.client_secret,
