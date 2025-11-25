@@ -8,8 +8,16 @@ import express, { Application, Request, Response } from 'express';
 import globalErrorHandler from './app/middlewares/globalErrorhandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
+import { SubscriptionPaymentControllers } from './app/modules/subscriptionPayment/subscriptionPayment.controller';
 
 const app: Application = express();
+
+// This is ONLY for the webhook route
+app.post(
+  '/stripe/webhook',
+  express.raw({ type: 'application/json' }),
+  SubscriptionPaymentControllers.createSubscriptionPayment,
+);
 
 //parser
 app.use(express.json());
@@ -18,10 +26,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: [
-      'https://dollarfar.com',
-      'http://localhost:5174',
-    ],
+    origin: ['https://dollarfar.com', 'http://localhost:5174'],
     credentials: true,
   }),
 );

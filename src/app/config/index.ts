@@ -4,21 +4,28 @@ import path from 'path';
 dotenv.config({ path: path.join((process.cwd(), '.env')) });
 
 export default {
+  // Application
   node_env: process.env.NODE_ENV,
   port: process.env.PORT,
 
+  // Database
   mongodb_url: process.env.DATABASE_URL,
-  fred_api_key: process.env.FRED_API_KEY,
 
+  // APIs
+  fred_api_key: process.env.FRED_API_KEY,
+  numbeo_api_key: process.env.NUMBEO_API_KEY,
+
+  // Secret
   default_password: process.env.DEFAULT_PASS,
   super_admin_password: process.env.SUPER_ADMIN_PASSWORD,
   reset_pass_ui_link: process.env.RESET_PASS_UI_LINK,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
-  numbeo_api_key: process.env.NUMBEO_API_KEY,
 
   // Stripe
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,
+  stripe_webhook_secret_key: process.env.STRIPE_WEBHOOK_SECRET,
   stripe_secret_key_test: process.env.STRIPE_SECRET_KEY_TEST,
+  stripe_webhook_secret_key_test: process.env.STRIPE_WEBHOOK_SECRET_TEST,
 
   // Zepto Mail
   zepto_smpt_user: process.env.ZEPTO_SMTP_USER,

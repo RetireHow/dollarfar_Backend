@@ -20,9 +20,4 @@ router.get(
   RetirementNextStepControllers.getAllRetirementNextStepPlans,
 );
 
-router.post(
-  '/create-retirehow-payment',
-  RetirementNextStepControllers.createRetirementSubscriptionPayment,
-);
-
 export const RetirementNextStepPlanRoutes = router;

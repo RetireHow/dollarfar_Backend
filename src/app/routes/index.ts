@@ -9,6 +9,7 @@ import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retire
 import { UserRoutes } from '../modules/user/user.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { RetirementNextStepPlanRoutes } from '../modules/retirementNextStepPlan/retirementNextStepPlan.route';
+import { SubscriptionPaymentRoutes } from '../modules/subscriptionPayment/subscriptionPayment.route';
 
 const router = Router();
 
@@ -40,6 +41,10 @@ const moduleRoutes = [
   {
     path: '/retirement-next-step-plans',
     route: RetirementNextStepPlanRoutes,
+  },
+  {
+    path: '/subscription',
+    route: SubscriptionPaymentRoutes,
   },
   {
     path: '/retirement-plan-notes',
