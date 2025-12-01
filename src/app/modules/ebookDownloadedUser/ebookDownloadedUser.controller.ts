@@ -5,7 +5,7 @@ import { EbookDownloadedUserServices } from './ebookDownloadedUser.service';
 import Stripe from 'stripe';
 import config from '../../config';
 import AppError from '../../errors/AppError';
-import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
+import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
 
 const stripe = new Stripe(config.stripe_secret_key as string);
 
@@ -79,7 +79,7 @@ const checkoutSession = catchAsync(async (req, res) => {
       success: true,
     });
 
-    const zeptoRes = await sendZeptoEmail({
+    const zeptoRes = await sendTemplatedEmail({
       templateKey:
         '3b2f8.24630c2170da85ea.k1.1741e390-72b0-11f0-aac3-ee3032389deb.1987eecd849',
       to: [

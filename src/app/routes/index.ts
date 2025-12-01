@@ -9,7 +9,9 @@ import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retire
 import { UserRoutes } from '../modules/user/user.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
 import { RetirementNextStepPlanRoutes } from '../modules/retirementNextStepPlan/retirementNextStepPlan.route';
-import { SubscriptionPaymentRoutes } from '../modules/subscriptionPayment/subscriptionPayment.route';
+import { RetirementPlanEmailRoutes } from '../modules/retirementPlanEmail/retirementPlanEmail.route';
+import { ConsultationSessionRoutes } from '../modules/consultationSession/consultationSession.route';
+import { ConsultationSubscriptionRoutes } from '../modules/consultationSubscription/consultationSubscription.route';
 
 const router = Router();
 
@@ -43,12 +45,20 @@ const moduleRoutes = [
     route: RetirementNextStepPlanRoutes,
   },
   {
-    path: '/subscription',
-    route: SubscriptionPaymentRoutes,
+    path: '/consultation-subscription',
+    route: ConsultationSubscriptionRoutes,
+  },
+  {
+    path: '/consultation-session',
+    route: ConsultationSessionRoutes,
   },
   {
     path: '/retirement-plan-notes',
     route: RetirementPlanNotesRoutes,
+  },
+  {
+    path: '/retirement-plan-email',
+    route: RetirementPlanEmailRoutes,
   },
   {
     path: '/andex',

@@ -188,7 +188,7 @@ const retirementNextStepSchema = new Schema<TRetirementNextStep>(
       type: BudgetEstimatesSchema,
       default: {},
     },
-    travel_purpose: { type: [String], trim: true },
+    travel_purposes: { type: [String], trim: true },
     privacy_acknowledgements: {
       type: PrivacyAcknowledgementsSchema,
       required: true,
@@ -197,8 +197,6 @@ const retirementNextStepSchema = new Schema<TRetirementNextStep>(
   {
     timestamps: true,
     versionKey: false,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true },
   },
 );
 

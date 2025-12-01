@@ -60,6 +60,6 @@ export type TRetirementNextStep = {
   dollarfar_planning: TDollarFarPlanning;
   travel_planning: TTravelPlanning;
   budget_estimates: TBudgetEstimates;
-  travel_purpose: TTravelPurpose;
+  travel_purposes: TTravelPurpose;
   privacy_acknowledgements: TPrivacyAcknowledgements;
 };

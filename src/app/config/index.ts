@@ -23,7 +23,9 @@ export default {
 
   // Stripe
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,
-  stripe_webhook_secret_key: process.env.STRIPE_WEBHOOK_SECRET,
+  stripe_consultation_subscribe_webhook_secret:
+    process.env.STRIPE_CONSULTATION_SUBSCRIBE_WEBHOOK_SECRET,
+
   stripe_secret_key_test: process.env.STRIPE_SECRET_KEY_TEST,
   stripe_webhook_secret_key_test: process.env.STRIPE_WEBHOOK_SECRET_TEST,
 

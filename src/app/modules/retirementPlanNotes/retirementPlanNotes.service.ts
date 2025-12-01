@@ -6,12 +6,12 @@ import httpStatus from 'http-status';
 const createRetirementPlanNotesIntoDB = async (
   payload: TRetirementPlanNotes,
 ) => {
-  const res = RetirementPlanNotesModel.create(payload);
+  const res = await RetirementPlanNotesModel.create(payload);
   return res;
 };
 
 const getRetirementPlanNotesFromDB = async (planId: string) => {
-  const res = RetirementPlanNotesModel.find({ retirementPlan: planId })
+  const res = await RetirementPlanNotesModel.find({ retirementPlan: planId })
     // .populate('retirementPlan')
     .sort({ _id: -1 });
   return res;
@@ -37,7 +37,7 @@ const updateRetirementPlanNotesIntoDB = async (payload: {
   if (!note) {
     throw new AppError(httpStatus.NOT_FOUND, 'Note not found!');
   }
-  const res = RetirementPlanNotesModel.findByIdAndUpdate(
+  const res = await RetirementPlanNotesModel.findByIdAndUpdate(
     payload.noteId,
     { content: payload.content },
     { new: true, runValidators: true },

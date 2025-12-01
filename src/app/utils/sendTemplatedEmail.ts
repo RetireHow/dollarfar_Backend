@@ -15,7 +15,7 @@ interface SendEmailOptions {
   mergeInfo?: Record<string, any>;
 }
 
-export const sendZeptoEmail = async ({
+export const sendTemplatedEmail = async ({
   templateKey,
   to,
   from = { address: 'info@dollarfar.com', name: 'Dollarfar' },

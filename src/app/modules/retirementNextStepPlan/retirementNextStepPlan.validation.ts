@@ -77,7 +77,7 @@ const createRetirementNextStepValidationSchema = z.object({
     dollarfar_planning: DollarFarPlanningSchema.default({}),
     travel_planning: TravelPlanningSchema.default({}),
     budget_estimates: BudgetEstimatesSchema.default({}),
-    travel_purpose: z.array(z.string()).default([]),
+    travel_purposes: z.array(z.string()).default([]),
     privacy_acknowledgements: PrivacyAcknowledgementsSchema.refine(
       data => data.ack_poc && data.ack_scope,
       {

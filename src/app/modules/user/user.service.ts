@@ -21,7 +21,7 @@ const createAdminIntoDB = async (
   //if password is not given , use deafult password
   userData.password = password || (config.default_password as string);
 
-  //set student role
+  //set user role
   userData.role = 'admin';
 
   //set admin email
@@ -78,6 +78,9 @@ const getMe = async (userId: Types.ObjectId, role: string) => {
   let result = null;
   if (role === 'admin') {
     result = await Admin.findOne({ user: userId });
+  }
+  if (role === 'superAdmin') {
+    result = await User.findById(userId);
   }
   return result;
 };

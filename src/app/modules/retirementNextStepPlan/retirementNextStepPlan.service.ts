@@ -1,11 +1,11 @@
 import { RetirementNextStepModel } from './retirementNextStepPlan.model';
 import { TRetirementNextStep } from './retirementNextStepPlan.interface';
-import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
+import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
 
 const createRetirementNextStepPlanIntoDB = async (
   payload: TRetirementNextStep,
 ) => {
-  const zeptoRes = await sendZeptoEmail({
+  const zeptoRes = await sendTemplatedEmail({
     templateKey:
       '3b2f8.24630c2170da85ea.k1.ea908f10-bad8-11f0-9a59-1ad0b05a72f3.19a57d45a81',
     // to: [{ address: 'rao.movva@retirehow.com', name: 'Rao Movva' }],
@@ -21,12 +21,12 @@ const createRetirementNextStepPlanIntoDB = async (
   if (zeptoRes.error) {
     throw zeptoRes.error;
   }
-  const res = RetirementNextStepModel.create(payload);
+  const res = await RetirementNextStepModel.create(payload);
   return res;
 };
 
 const getAllRetirementNextStepPlansFromDB = async () => {
-  const res = RetirementNextStepModel.find({}).sort({ _id: -1 });
+  const res = await RetirementNextStepModel.find({}).sort({ _id: -1 });
   return res;
 };
 

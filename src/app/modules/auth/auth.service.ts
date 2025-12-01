@@ -8,9 +8,9 @@ import { createToken, verifyToken } from './auth.utils';
 import { User } from '../user/user.model';
 import crypto from 'crypto';
 import { OTPModel } from '../otp/otp.model';
-import { sendZeptoEmail } from '../../utils/sendZeptoEmail';
 import mongoose from 'mongoose';
 import { Request, Response } from 'express';
+import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
 
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
@@ -139,7 +139,7 @@ const sendOTPMailFromDB = async (email: string) => {
   );
 
   // Send OTP Mail
-  const zeptoRes = await sendZeptoEmail({
+  const zeptoRes = await sendTemplatedEmail({
     templateKey:
       '3b2f8.24630c2170da85ea.k1.ed955e60-15f7-11f0-b652-2655081e6903.1961f478746',
     to: [{ address: email, name: '' }],
