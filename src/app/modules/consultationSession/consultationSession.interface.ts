@@ -67,6 +67,7 @@ export interface IConsultationSession {
   privacy_acknowledgements?: IPrivacyAcknowledgements;
   isDeleted: boolean;
   slot: Date;
+  userTZ:string;
 
   // Timestamps
   createdAt?: Date;
