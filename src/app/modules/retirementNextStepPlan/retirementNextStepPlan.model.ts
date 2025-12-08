@@ -1,7 +1,16 @@
 import { model, Schema } from 'mongoose';
-import { TRetirementNextStep } from './retirementNextStepPlan.interface';
+import {
+  TBudgetEstimates,
+  TContactInfo,
+  TDollarFarPlanning,
+  THousingEquity,
+  TPrivacyAcknowledgements,
+  TRetirementNextStep,
+  TRetirementSnapshot,
+  TTravelPlanning,
+} from './retirementNextStepPlan.interface';
 
-const ContactInfoSchema = new Schema(
+const ContactInfoSchema = new Schema<TContactInfo>(
   {
     name: {
       type: String,
@@ -32,7 +41,7 @@ const ContactInfoSchema = new Schema(
   { _id: false },
 );
 
-const RetirementSnapshotSchema = new Schema(
+const RetirementSnapshotSchema = new Schema<TRetirementSnapshot>(
   {
     target_age: {
       type: String,
@@ -50,7 +59,7 @@ const RetirementSnapshotSchema = new Schema(
   { _id: false },
 );
 
-const HousingEquitySchema = new Schema(
+const HousingEquitySchema = new Schema<THousingEquity>(
   {
     estimated_home_equity: {
       type: String,
@@ -64,46 +73,15 @@ const HousingEquitySchema = new Schema(
   { _id: false },
 );
 
-const DollarFarPlanningSchema = new Schema(
+const DollarFarPlanningSchema = new Schema<TDollarFarPlanning>(
   {
     calculators: { type: [String], trim: true },
     interpretation_toggle: { type: Boolean, default: false },
-    name_pre: {
-      type: String,
-      trim: true,
-    },
-    email_pre: {
-      type: String,
-      trim: true,
-      lowercase: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        'Please enter a valid email',
-      ],
-    },
-    phone_pre: {
-      type: String,
-      trim: true,
-      match: [/^[+]?[1-9][\d]{0,15}$/, 'Please enter a valid phone number'],
-    },
-    time_pre: {
-      type: String,
-      trim: true,
-    },
-    subscription_status: {
-      type: String,
-      enum: ['', 'have', 'start', 'paid'],
-      default: '',
-    },
-    subscription_payment_intent: {
-      type: String,
-      trim: true,
-    },
   },
   { _id: false },
 );
 
-const TravelPlanningSchema = new Schema(
+const TravelPlanningSchema = new Schema<TTravelPlanning>(
   {
     months_abroad: {
       type: String,
@@ -130,7 +108,7 @@ const TravelPlanningSchema = new Schema(
   { _id: false },
 );
 
-const BudgetEstimatesSchema = new Schema(
+const BudgetEstimatesSchema = new Schema<TBudgetEstimates>(
   {
     home_spend_monthly: {
       type: String,
@@ -152,7 +130,7 @@ const BudgetEstimatesSchema = new Schema(
   { _id: false },
 );
 
-const PrivacyAcknowledgementsSchema = new Schema(
+const PrivacyAcknowledgementsSchema = new Schema<TPrivacyAcknowledgements>(
   {
     ack_poc: { type: Boolean, default: false },
     consent_contact: { type: Boolean, default: false },

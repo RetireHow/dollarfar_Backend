@@ -19,5 +19,10 @@ router.get(
   auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   RetirementNextStepControllers.getAllRetirementNextStepPlans,
 );
+router.get(
+  '/:planId',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
+  RetirementNextStepControllers.getSingleRetirementNextStepPlan,
+);
 
 export const RetirementNextStepPlanRoutes = router;

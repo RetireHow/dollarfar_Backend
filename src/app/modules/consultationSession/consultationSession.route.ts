@@ -23,4 +23,14 @@ router.get(
   ConsultationSessionControllers.getUserConsultationSessions,
 );
 
+router.get(
+  '/scheduled/:sessionId',
+  ConsultationSessionControllers.getSingleConsultationSession,
+);
+
+router.get(
+  '/scheduled/slots/:date',
+  ConsultationSessionControllers.getAllConsultationSessionSlots,
+);
+
 export const ConsultationSessionRoutes = router;

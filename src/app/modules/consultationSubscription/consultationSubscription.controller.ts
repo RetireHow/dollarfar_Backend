@@ -53,7 +53,7 @@ const getAllActiveConsultationSubscriptions = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'All valid subscription payments are retrieved successfully.',
+    message: 'All Active subscriptions are retrieved successfully.',
     data: result,
   });
 });
@@ -64,7 +64,7 @@ const getAllUsedConsultationSubscriptions = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'All used subscription payments are retrieved successfully.',
+    message: 'All used subscriptions are retrieved successfully.',
     data: result,
   });
 });

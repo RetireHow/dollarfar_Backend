@@ -82,6 +82,7 @@ const privacyAcknowledgementsSchema = new Schema<IPrivacyAcknowledgements>(
 // Main Consultation Session Schema
 const consultationSessionSchema = new Schema<IConsultationSession>(
   {
+    slot: { type: Date, required: true, unique: true, index: true },
     subscription: {
       type: Schema.Types.ObjectId,
       ref: 'ConsultationSubscription',

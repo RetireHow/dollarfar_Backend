@@ -38,12 +38,6 @@ const HousingEquitySchema = z.object({
 const DollarFarPlanningSchema = z.object({
   calculators: z.array(z.string()).default([]),
   interpretation_toggle: z.boolean().default(false),
-  name_pre: z.string().trim().optional(),
-  email_pre: z.string().email('Invalid email address').trim().optional(),
-  phone_pre: z.string().trim().optional(),
-  time_pre: z.string().trim().optional(),
-  subscription_status: z.enum(['', 'have', 'start', 'paid']).default(''),
-  subscription_payment_intent: z.string().trim().optional(),
 });
 
 const TravelPlanningSchema = z.object({

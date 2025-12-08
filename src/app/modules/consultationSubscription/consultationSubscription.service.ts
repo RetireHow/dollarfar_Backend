@@ -152,7 +152,7 @@ const getSingleActiveConsultationSubscriptionFromDB = async (email: string) => {
 
 const getAllActiveConsultationSubscriptionsFromDB = async () => {
   const now = new Date();
-  const subscription = await ConsultationSubscription.findOne({
+  const subscription = await ConsultationSubscription.find({
     status: 'active',
     expiryDate: { $gte: now }, // not expired
     $expr: {
@@ -164,7 +164,7 @@ const getAllActiveConsultationSubscriptionsFromDB = async () => {
 };
 
 const getAllUsedConsultationSubscriptionsFromDB = async () => {
-  const subscription = await ConsultationSubscription.findOne({
+  const subscription = await ConsultationSubscription.find({
     status: 'used',
     $expr: {
       // sessionsUsed < sessionsPurchased
@@ -176,7 +176,7 @@ const getAllUsedConsultationSubscriptionsFromDB = async () => {
 
 const getAllExpiredConsultationSubscriptionsFromDB = async () => {
   const now = new Date();
-  const subscription = await ConsultationSubscription.findOne({
+  const subscription = await ConsultationSubscription.find({
     expiryDate: { $lte: now }, // expired
   });
   return subscription;

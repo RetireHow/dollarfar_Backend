@@ -22,7 +22,7 @@ export interface IHousingEquity {
 export interface IDollarFarPlanning {
   calculators?: string[];
   interpretation_toggle: boolean;
-  consultation_time: string;
+  consultation_time:string;
 }
 
 export interface ITravelPlanning {
@@ -66,6 +66,7 @@ export interface IConsultationSession {
   budget_estimates?: IBudgetEstimates;
   privacy_acknowledgements?: IPrivacyAcknowledgements;
   isDeleted: boolean;
+  slot: Date;
 
   // Timestamps
   createdAt?: Date;

@@ -63,6 +63,10 @@ const bookConsultationSessionValidationSchema = z.object({
     travel_purposes: z.array(z.string()).optional(),
     budget_estimates: budgetEstimatesSchema.optional(),
     privacy_acknowledgements: privacyAcknowledgementsSchema.optional(),
+    slot: z.string().datetime({
+      message:
+        'Invalid ISO 8601 date format. Example: 2024-01-15T14:30:00.000Z',
+    }),
   }),
 });
 

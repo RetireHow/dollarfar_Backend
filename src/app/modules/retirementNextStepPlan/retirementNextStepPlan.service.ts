@@ -30,8 +30,13 @@ const getAllRetirementNextStepPlansFromDB = async () => {
   return res;
 };
 
+const getSingleRetirementNextStepPlanFromDB = async (planId: string) => {
+  const res = await RetirementNextStepModel.findById(planId);
+  return res;
+};
 
 export const RetirementNextStepServices = {
   createRetirementNextStepPlanIntoDB,
   getAllRetirementNextStepPlansFromDB,
+  getSingleRetirementNextStepPlanFromDB,
 };

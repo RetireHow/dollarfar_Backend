@@ -19,12 +19,6 @@ export type THousingEquity = {
 export type TDollarFarPlanning = {
   calculators?: string[];
   interpretation_toggle?: boolean;
-  name_pre?: string;
-  email_pre?: string;
-  phone_pre?: string;
-  time_pre?: string;
-  subscription_status?: '' | 'have' | 'start' | 'paid';
-  subscription_payment_intent?: string;
 };
 
 export type TTravelPlanning = {

@@ -29,8 +29,23 @@ const getAllRetirementNextStepPlans = catchAsync(async (req, res) => {
   });
 });
 
+const getSingleRetirementNextStepPlan = catchAsync(async (req, res) => {
+  const { planId } = req.params;
+  const result =
+    await RetirementNextStepServices.getSingleRetirementNextStepPlanFromDB(
+      planId,
+    );
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retirement next step plan is retrieved successfully.',
+    data: result,
+  });
+});
 
 export const RetirementNextStepControllers = {
   createRetirementNextStepPlan,
   getAllRetirementNextStepPlans,
+  getSingleRetirementNextStepPlan,
 };
