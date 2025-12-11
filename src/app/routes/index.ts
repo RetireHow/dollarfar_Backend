@@ -12,6 +12,7 @@ import { RetirementNextStepPlanRoutes } from '../modules/retirementNextStepPlan/
 import { RetirementPlanEmailRoutes } from '../modules/retirementPlanEmail/retirementPlanEmail.route';
 import { ConsultationSessionRoutes } from '../modules/consultationSession/consultationSession.route';
 import { ConsultationSubscriptionRoutes } from '../modules/consultationSubscription/consultationSubscription.route';
+import { ConsultationScheduleConfigRoutes } from '../modules/consultationScheduleConfig/consultationScheduleConfig.route';
 
 const router = Router();
 
@@ -51,6 +52,10 @@ const moduleRoutes = [
   {
     path: '/consultation-session',
     route: ConsultationSessionRoutes,
+  },
+  {
+    path: '/consultation-schedule-config',
+    route: ConsultationScheduleConfigRoutes,
   },
   {
     path: '/retirement-plan-notes',

@@ -14,15 +14,15 @@ router.post(
 );
 
 router.post(
-  '/logout',
-  auth(USER_ROLE.superAdmin, USER_ROLE.admin, USER_ROLE.moderator),
-  AuthControllers.logoutUser,
-);
-
-router.post(
   '/refresh-token',
   validateRequest(AuthValidation.refreshTokenValidationSchema),
   AuthControllers.refreshToken,
+);
+
+router.post(
+  '/logout',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin, USER_ROLE.moderator),
+  AuthControllers.logoutUser,
 );
 
 router.post(

@@ -68,6 +68,7 @@ export interface IConsultationSession {
   isDeleted: boolean;
   slot: Date;
   userTZ:string;
+  providerTZ:string;
 
   // Timestamps
   createdAt?: Date;

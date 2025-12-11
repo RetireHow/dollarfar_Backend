@@ -2,6 +2,8 @@ import express from 'express';
 import { ConsultationSessionControllers } from './consultationSession.controller';
 import validateRequest from '../../middlewares/validateRequest';
 import { ConsultationSessionValidation } from './consultationSession.validation';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../user/user.constant';
 
 const router = express.Router();
 
@@ -15,6 +17,7 @@ router.post(
 
 router.get(
   '/scheduled',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   ConsultationSessionControllers.getAllConsultationSessions,
 );
 
@@ -25,12 +28,8 @@ router.get(
 
 router.get(
   '/scheduled/:sessionId',
+  auth(USER_ROLE.superAdmin, USER_ROLE.admin),
   ConsultationSessionControllers.getSingleConsultationSession,
-);
-
-router.get(
-  '/scheduled/slots/:date',
-  ConsultationSessionControllers.getAllConsultationSessionSlots,
 );
 
 export const ConsultationSessionRoutes = router;

@@ -51,24 +51,9 @@ const getSingleConsultationSession = catchAsync(async (req, res) => {
   });
 });
 
-const getAllConsultationSessionSlots = catchAsync(async (req, res) => {
-  const { date } = req.params;
-  const result =
-    await ConsultationSessionServices.getAllConsultationSessionSlotsFromDB(
-      date,
-    );
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'Available slots are retrieved successfully.',
-    data: result,
-  });
-});
-
 export const ConsultationSessionControllers = {
   bookConsultationSession,
   getUserConsultationSessions,
   getAllConsultationSessions,
-  getSingleConsultationSession,
-  getAllConsultationSessionSlots,
+  getSingleConsultationSession
 };

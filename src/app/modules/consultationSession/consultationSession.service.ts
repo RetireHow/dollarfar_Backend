@@ -6,7 +6,7 @@ import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import { ConsultationSubscription } from '../consultationSubscription/consultationSubscription.model';
 import { TConsultationSubscription } from '../consultationSubscription/consultationSubscription.interface';
-import { DateTime } from 'luxon';
+import { ConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.model';
 
 const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
   const session = await mongoose.startSession();
@@ -50,10 +50,21 @@ const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
       );
     }
 
+    //Get info from consultation schedule config
+    const scheduleConfig = await ConsultationScheduleConfig.findOne();
+    if (!scheduleConfig) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'No consultation schedule configuration found!',
+      );
+    }
+
     const session_number = subscription.sessionsUsed! + 1;
     const sessions_remaining = subscription.sessionsPurchased! - session_number;
     const newSessionData = {
       ...payload,
+      providerTZ: scheduleConfig?.providerTimezone,
+      session_duration: scheduleConfig?.slotDurationMinutes,
       slot: slotUTC,
       session_number,
       sessions_remaining,
@@ -134,78 +145,9 @@ const getSingleConsultationSessionFromDB = async (sessionId: string) => {
   return res;
 };
 
-// Example provider time zone
-const PROVIDER_TZ = 'America/Toronto';
-const SLOT_MINUTES = 30;
-const START_HOUR = 10;
-const END_HOUR = 16;
-
-// Helper: generate slots (as JS Date objects in UTC)
-function generateSlotsForDateIso(dateIso: string) {
-  // dateIso expected like '2025-12-01' (local date in provider tz)
-  const slots = [];
-
-  // Start at provider's date at START_HOUR (in provider tz)
-  let current = DateTime.fromISO(dateIso, { zone: PROVIDER_TZ }).set({
-    hour: START_HOUR,
-    minute: 0,
-    second: 0,
-    millisecond: 0,
-  });
-
-  const end = DateTime.fromISO(dateIso, { zone: PROVIDER_TZ }).set({
-    hour: END_HOUR,
-    minute: 0,
-    second: 0,
-    millisecond: 0,
-  });
-
-  while (current < end) {
-    // convert to UTC Date object for DB/comparison
-    slots.push(current.toUTC().toJSDate());
-    current = current.plus({ minutes: SLOT_MINUTES });
-  }
-
-  return slots;
-}
-
-const getAllConsultationSessionSlotsFromDB = async (date: string) => {
-  // generate candidate slots in UTC Date form
-  const candidates = generateSlotsForDateIso(date);
-
-  // fetch bookings that fall on that date's candidate slots (slot field stored as UTC Date)
-  const startWindow = candidates[0];
-  const endWindow = candidates[candidates.length - 1];
-
-  // fetch bookings in that window (plus slot duration to be safe)
-  const booked = await ConsultationSession.find({
-    slot: {
-      $gte: startWindow,
-      $lte: new Date(endWindow.getTime() + 30 * 60 * 1000),
-    },
-  }).select('slot -_id');
-
-  const bookedSet = new Set(booked.map(b => b.slot.toISOString()));
-
-  // prepare response: array of objects { utc: ISOString, providerISO: ISOString (provider tz), available: bool }
-  const response = candidates.map(d => {
-    const isoUtc = d.toISOString();
-    const providerZoned = DateTime.fromJSDate(d, { zone: 'UTC' })
-      .setZone(PROVIDER_TZ)
-      .toISO();
-    return {
-      utc: isoUtc,
-      providerTime: providerZoned,
-      available: !bookedSet.has(isoUtc),
-    };
-  });
-  return response;
-};
-
 export const ConsultationSessionServices = {
   bookConsultationSessionIntoDB,
   getUserConsultationSessionsFromDB,
   getAllConsultationSessionsFromDB,
   getSingleConsultationSessionFromDB,
-  getAllConsultationSessionSlotsFromDB,
 };
