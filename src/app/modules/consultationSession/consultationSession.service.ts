@@ -57,6 +57,7 @@ const getCustomerEmailHTMLBody = (
             line-height: 30px;
             margin: 20px;
             font-family: Arial, sans-serif;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -104,7 +105,7 @@ const getCustomerEmailHTMLBody = (
             <strong>- Province/State:</strong> ${consultantPersonalInfo.state}
         </p>
          <p>
-            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
+            <strong>- Scheduled Time (Consultant Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
         </p>
     </div>
 
@@ -148,6 +149,7 @@ const getAdvisorEmailHTMLBody = (
     <style>
         body {
             font-family: Arial, sans-serif;
+            font-size: 16px;
             line-height: 30px;
             color: #333;
             max-width: 600px;
