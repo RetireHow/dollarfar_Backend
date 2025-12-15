@@ -76,7 +76,7 @@ const getCustomerEmailHTMLBody = (
             <strong>Session Details:</strong>
         </p>
         <p>
-            <strong>- Scheduled Time:</strong> ${convertUTCToTimeZone(data?.slot, data.userTZ)} (${data.userTZ})
+            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data?.slot, data.userTZ)} (${data.userTZ})
         </p>
         <p>
             <strong>- Duration:</strong> 30 minutes
@@ -104,7 +104,7 @@ const getCustomerEmailHTMLBody = (
             <strong>- Province/State:</strong> ${consultantPersonalInfo.state}
         </p>
          <p>
-            <strong>- Scheduled Time:</strong> ${consultantPersonalInfo.consultantTZ} (${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)})
+            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
         </p>
     </div>
 
