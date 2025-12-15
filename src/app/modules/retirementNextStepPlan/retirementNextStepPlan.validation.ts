@@ -21,7 +21,18 @@ const ContactInfoSchema = z.object({
     })
     .email('Invalid email address')
     .trim(),
-  region: z.string().trim().optional(),
+  region: z
+    .string({
+      required_error: 'State/Province is required',
+      invalid_type_error: 'State/Province must be string',
+    })
+    .trim(),
+  country: z
+    .string({
+      required_error: 'Country is required',
+      invalid_type_error: 'Country must be string',
+    })
+    .trim(),
 });
 
 const RetirementSnapshotSchema = z.object({

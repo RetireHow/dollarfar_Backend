@@ -36,6 +36,12 @@ const ContactInfoSchema = new Schema<TContactInfo>(
     region: {
       type: String,
       trim: true,
+      required: true,
+    },
+    country: {
+      type: String,
+      trim: true,
+      required: true,
     },
   },
   { _id: false },

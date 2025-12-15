@@ -83,8 +83,8 @@ const getCustomerEmailHTMLBody = (
             <strong>- Duration:</strong> 30 minutes
         </p>
         <p>
-            <strong>- Format:</strong> Online video call (Zoom/Google Meet link
-            will be sent 24 hours before)
+            <strong>- Format:</strong> Online video call (Zoom/Google Meet/Microsoft Teams link
+            will be sent 24 hours before the session)
         </p>
     </div>
 

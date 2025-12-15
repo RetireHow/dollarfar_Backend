@@ -2,7 +2,8 @@ export type TContactInfo = {
   name: string;
   phone: string;
   email: string;
-  region?: string;
+  region: string;
+  country: string;
 };
 
 export type TRetirementSnapshot = {
