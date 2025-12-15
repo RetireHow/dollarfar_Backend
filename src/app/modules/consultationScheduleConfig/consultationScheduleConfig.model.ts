@@ -20,6 +20,10 @@ const DisabledTimeRangeSchema = new Schema<IDisabledTimeRange>({
 const ConsultationScheduleConfigSchema =
   new Schema<IConsultationScheduleConfig>(
     {
+      name: { type: String, required: true },
+      email: { type: String, required: true },
+      country: { type: String, required: true },
+      state: { type: String, required: true },
       providerTimezone: { type: String, required: true, default: 'UTC' },
       slotDurationMinutes: { type: Number, required: true, default: 30 },
       workingHours: { type: [WorkingHourSchema], default: [] },

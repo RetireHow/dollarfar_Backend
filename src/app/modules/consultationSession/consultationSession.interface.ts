@@ -5,7 +5,8 @@ export type IContactInfo = {
   name: string;
   phone: string;
   email: string;
-  region?: string;
+  region: string;
+  country: string;
 };
 
 export interface IRetirementSnapshot {

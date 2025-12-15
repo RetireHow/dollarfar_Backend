@@ -7,6 +7,207 @@ import httpStatus from 'http-status';
 import { ConsultationSubscription } from '../consultationSubscription/consultationSubscription.model';
 import { TConsultationSubscription } from '../consultationSubscription/consultationSubscription.interface';
 import { ConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.model';
+import { sendUserEmail } from '../../utils/sendUserEmail';
+import { IConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.interface';
+
+type TConsultantPersonalInfo = {
+  name: string;
+  email: string;
+  country: string;
+  state: string;
+  consultantTZ: string;
+};
+
+function convertUTCToTimeZone(utcString: Date, targetTZ: string) {
+  // Parse input as *UTC* explicitly
+  const date = new Date(utcString);
+
+  // Use target timezone for formatting
+  const dtf = new Intl.DateTimeFormat('en-GB', {
+    timeZone: targetTZ,
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+  });
+
+  // Break into parts
+  const parts = dtf.formatToParts(date);
+  const get = (type: string) => parts.find(p => p.type === type)?.value;
+
+  return `${get('day')} ${get('month')} ${get('year')} ${get('hour')}:${get(
+    'minute',
+  )} ${get('dayPeriod')!.toUpperCase()}`;
+}
+
+const getCustomerEmailHTMLBody = (
+  data: IConsultationSession,
+  consultantPersonalInfo: TConsultantPersonalInfo,
+) => {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetireHow Consultation Confirmation</title>
+    <style>
+        body {
+            line-height: 30px;
+            margin: 20px;
+            font-family: Arial, sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <header style="margin-bottom:20px;">
+        <p style="font-size:18px;">
+            Hi <strong>${data?.contact.name}</strong>,
+        </p>
+        <p>
+            Thank you for booking your consultation session with RetireHow! We're
+            excited to help you.
+        </p>
+    </header>
+
+    <div style="margin-bottom:20px;">
+        <p style="font-size:18px;">
+            <strong>Session Details:</strong>
+        </p>
+        <p>
+            <strong>- Scheduled Time:</strong> ${convertUTCToTimeZone(data?.slot, data.userTZ)} (${data.userTZ})
+        </p>
+        <p>
+            <strong>- Duration:</strong> 30 minutes
+        </p>
+        <p>
+            <strong>- Format:</strong> Online video call (Zoom/Google Meet link
+            will be sent 24 hours before)
+        </p>
+    </div>
+
+     <div style="margin-bottom:20px;">
+        <p style="font-size:18px;">
+            <strong>Consultant Details:</strong>
+        </p>
+        <p>
+            <strong>- Name:</strong> ${consultantPersonalInfo.name}
+        </p>
+        <p>
+            <strong>- Email:</strong> ${consultantPersonalInfo.email}
+        </p>
+        <p>
+            <strong>- Country:</strong> ${consultantPersonalInfo.country}
+        </p>
+        <p>
+            <strong>- Province/State:</strong> ${consultantPersonalInfo.state}
+        </p>
+         <p>
+            <strong>- Scheduled Time:</strong> ${consultantPersonalInfo.consultantTZ} (${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)})
+        </p>
+    </div>
+
+    <div style="margin-bottom:20px;">
+        <p style="font-size:18px;">
+            <strong>How to Join:</strong>
+        </p>
+        <p>
+            We'll send you the meeting link and any preparation materials 24 hours
+            before your scheduled session.
+        </p>
+    </div>
+
+    <footer>
+        <p style="margin-bottom:15px;">
+            We're looking forward to helping you make informed decisions about
+            your retirement planning!
+        </p>
+
+        <p style="margin-bottom:8px;">Warm regards,</p>
+
+        <p>Rao Movva, PFP, CIM, CIWM, FCSI</p>
+        <p>Founder, CEO</p>
+        <p>RetireHow.com & TravelGlobal.ca</p>
+        <p>Phone Canada Office: 1-289-815-3631</p>
+        <p>Email: rao.movva@retirehow.com</p>
+        <p>P.S. Don’t forget to check your inbox for more insights and resources coming your way!</p>
+    </footer>
+</body>
+</html>`;
+};
+
+const getAdvisorEmailHTMLBody = (
+  data: IConsultationSession,
+  consultantPersonalInfo: TConsultantPersonalInfo,
+) => {
+  return `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 30px;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            margin-bottom: 20px;
+        }
+        p {
+            margin: 0 0 10px 0;
+        }
+        strong {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <p style="font-size: 18px;">
+            Hi <strong>${consultantPersonalInfo.name}</strong>,
+        </p>
+        <p style="font-size: 17px;"><strong>New consultation booking from dollarfar.com</strong></p>
+    </header>
+
+    <div style="margin-bottom: 20px;">
+        <p style="font-size: 18px;">
+            <strong>Session Details:</strong>
+        </p>
+        <p>
+            <strong>- Client Name:</strong> ${data.contact.name}
+        </p>
+        <p>
+            <strong>- Email:</strong> ${data.contact.email}
+        </p>
+        <p>
+            <strong>- Phone:</strong> ${data.contact.phone}
+        </p>
+        <p>
+            <strong>- State/Province:</strong> ${data.contact.region}
+        </p>
+         <p>
+            <strong>- Country:</strong> ${data.contact.country}
+        </p>
+        <p>
+            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
+        </p>
+        <p>
+            <strong>- Scheduled Time (Client Timezone):</strong> ${convertUTCToTimeZone(data.slot, data.userTZ)} (${data.userTZ})
+        </p>
+        <p>
+            <strong>- Duration:</strong> 30 minutes
+        </p>
+        <p>
+            <strong>- Format:</strong> Online video call
+        </p>
+    </div>
+</body>
+</html>`;
+};
 
 const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
   const session = await mongoose.startSession();
@@ -51,7 +252,8 @@ const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
     }
 
     //Get info from consultation schedule config
-    const scheduleConfig = await ConsultationScheduleConfig.findOne();
+    const scheduleConfig =
+      (await ConsultationScheduleConfig.findOne()) as IConsultationScheduleConfig;
     if (!scheduleConfig) {
       throw new AppError(
         httpStatus.NOT_FOUND,
@@ -114,6 +316,38 @@ const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
         httpStatus.BAD_REQUEST,
         'Failed to update subscription',
       );
+    }
+
+    // Send email to customer
+    const consultantPersonalInfo = {
+      name: scheduleConfig.name,
+      email: scheduleConfig.email,
+      country: scheduleConfig.country,
+      state: scheduleConfig.state,
+      consultantTZ: scheduleConfig.providerTimezone,
+    };
+    const customreZeptoRes = await sendUserEmail({
+      to: [{ address: payload.contact.email, name: payload.contact.name }],
+      subject: 'Your Consultation Session is Confirmed!',
+      body: getCustomerEmailHTMLBody(payload, consultantPersonalInfo),
+    });
+    if (customreZeptoRes.error) {
+      throw customreZeptoRes.error;
+    }
+
+    // Send email to consultant
+    const consultantZeptoRes = await sendUserEmail({
+      to: [
+        {
+          address: consultantPersonalInfo.email,
+          name: consultantPersonalInfo.name,
+        },
+      ],
+      subject: 'You have received a new consultation booking via Dollarfar',
+      body: getAdvisorEmailHTMLBody(payload, consultantPersonalInfo),
+    });
+    if (consultantZeptoRes.error) {
+      throw consultantZeptoRes.error;
     }
 
     await session.commitTransaction();

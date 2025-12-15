@@ -17,7 +17,8 @@ const contactSchema = new Schema<IContactInfo>(
     name: { type: String, required: true },
     email: { type: String, required: true },
     phone: { type: String, required: true },
-    region: { type: String },
+    region: { type: String, required: true },
+    country: { type: String, required: true },
   },
   { _id: false },
 );

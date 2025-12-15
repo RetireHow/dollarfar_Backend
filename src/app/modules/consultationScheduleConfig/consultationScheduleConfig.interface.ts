@@ -27,7 +27,11 @@ export interface IDisabledTimeRange {
   end: string; // 'HH:mm'
 }
 
-export interface IConsultationScheduleConfig extends Document {
+export interface IConsultationScheduleConfig {
+  name: string;
+  email: string;
+  country: string;
+  state: string;
   providerId?: Types.ObjectId | null; // optional for global config
   providerTimezone: string; // e.g. 'America/Toronto'
   slotDurationMinutes: number; // e.g. 30
