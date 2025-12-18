@@ -63,7 +63,7 @@ export async function generateSlotsForDateIsoDynamic(
     await ConsultationScheduleConfig.findOne().lean<IConsultationScheduleConfig>();
   if (!config) return [];
 
-  const zone = config.providerTimezone || 'UTC';
+  const zone = config.consultantTZ_IANA || 'UTC';
   const slotMinutes = config.slotDurationMinutes || 30;
 
   const date = DateTime.fromISO(dateIso, { zone });
@@ -76,14 +76,19 @@ export async function generateSlotsForDateIsoDynamic(
   if (!hours) return []; // office closed today
 
   // Disabled full date
-  if ((config.disabledDates ?? []).includes(date.toISODate()!)) return [];
+  const isoDate = date.toISODate();
+  if (
+    isoDate &&
+    (config.blockedDates ?? []).some(blocked => blocked.date === isoDate)
+  )
+    return [];
 
   const workingStart = timeOnDate(dateIso, hours.start, zone);
   const workingEnd = timeOnDate(dateIso, hours.end, zone);
   if (!workingStart.isValid || !workingEnd.isValid) return [];
 
   const breaks = config.breaks ?? [];
-  const disabledTimeRanges = config.disabledTimeRanges ?? [];
+  const disabledTimeRanges = config.blockedTimeRanges ?? [];
 
   // Generate all candidate slots first
   const candidateSlots: DateTime[] = [];

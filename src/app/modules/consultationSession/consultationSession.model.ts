@@ -85,7 +85,9 @@ const consultationSessionSchema = new Schema<IConsultationSession>(
   {
     slot: { type: Date, required: true, unique: true, index: true },
     userTZ: { type: String, required: true },
-    providerTZ: { type: String, required: true },
+    userTZ_IANA: { type: String, required: true },
+    consultantTZ: { type: String, required: true },
+    consultantTZ_IANA: { type: String, required: true },
     subscription: {
       type: Schema.Types.ObjectId,
       ref: 'ConsultationSubscription',

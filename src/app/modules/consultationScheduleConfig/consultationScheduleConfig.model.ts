@@ -1,7 +1,9 @@
 import { model, Schema } from 'mongoose';
 import {
+  IBlockedDate,
+  IBlockedTimeRange,
+  IBreak,
   IConsultationScheduleConfig,
-  IDisabledTimeRange,
   IWorkingHour,
 } from './consultationScheduleConfig.interface';
 
@@ -11,10 +13,23 @@ const WorkingHourSchema = new Schema<IWorkingHour>({
   end: { type: String, required: true },
 });
 
-const DisabledTimeRangeSchema = new Schema<IDisabledTimeRange>({
+const BreakSchema = new Schema<IBreak>({
+  day: { type: String, required: true },
+  start: { type: String, required: true },
+  end: { type: String, required: true },
+  reason: { type: String, required: true },
+});
+
+const BlockedTimeRangeSchema = new Schema<IBlockedTimeRange>({
   date: { type: String, required: true },
   start: { type: String, required: true },
   end: { type: String, required: true },
+  reason: { type: String, required: true },
+});
+
+const BlockedDateSchema = new Schema<IBlockedDate>({
+  date: { type: String, required: true },
+  reason: { type: String, required: true },
 });
 
 const ConsultationScheduleConfigSchema =
@@ -24,21 +39,23 @@ const ConsultationScheduleConfigSchema =
       email: { type: String, required: true },
       country: { type: String, required: true },
       state: { type: String, required: true },
-      providerTimezone: { type: String, required: true, default: 'UTC' },
+      consultantTZ: {
+        type: String,
+        required: true,
+        default: '(UTC-05:00) Eastern Time (US & Canada)',
+      },
+      consultantTZ_IANA: {
+        type: String,
+        required: true,
+        default: 'America/Toronto',
+      },
       slotDurationMinutes: { type: Number, required: true, default: 30 },
       workingHours: { type: [WorkingHourSchema], default: [] },
-      breaks: {
-        type: [
-          new Schema({
-            day: { type: String, required: true },
-            start: { type: String, required: true },
-            end: { type: String, required: true },
-          }),
-        ],
-        default: [],
-      },
-      disabledDates: { type: [String], default: [] },
-      disabledTimeRanges: { type: [DisabledTimeRangeSchema], default: [] },
+
+      breaks: { type: [BreakSchema], default: [] },
+      blockedDates: { type: [BlockedDateSchema], default: [] },
+      blockedTimeRanges: { type: [BlockedTimeRangeSchema], default: [] },
+
       active: { type: Boolean, default: true },
       lastUpdatedBy: {
         type: Schema.Types.ObjectId,

@@ -75,6 +75,7 @@ const bookConsultationSessionValidationSchema = z.object({
         'Invalid ISO 8601 date format. Example: 2024-01-15T14:30:00.000Z',
     }),
     userTZ: z.string(),
+    userTZ_IANA: z.string(),
   }),
 });
 

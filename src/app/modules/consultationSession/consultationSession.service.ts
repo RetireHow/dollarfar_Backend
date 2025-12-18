@@ -16,15 +16,16 @@ type TConsultantPersonalInfo = {
   country: string;
   state: string;
   consultantTZ: string;
+  consultantTZ_IANA: string;
 };
 
-function convertUTCToTimeZone(utcString: Date, targetTZ: string) {
+function convertUTCToTimeZone(utcString: Date, targetTZ_IANA: string) {
   // Parse input as *UTC* explicitly
   const date = new Date(utcString);
 
   // Use target timezone for formatting
   const dtf = new Intl.DateTimeFormat('en-GB', {
-    timeZone: targetTZ,
+    timeZone: targetTZ_IANA,
     day: '2-digit',
     month: 'short',
     year: 'numeric',
@@ -77,7 +78,7 @@ const getCustomerEmailHTMLBody = (
             <strong>Session Details:</strong>
         </p>
         <p>
-            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data?.slot, data.userTZ)} (${data.userTZ})
+            <strong>- Scheduled Time:</strong> ${convertUTCToTimeZone(data?.slot, data.userTZ_IANA)} - ${data.userTZ}
         </p>
         <p>
             <strong>- Duration:</strong> 30 minutes
@@ -105,7 +106,7 @@ const getCustomerEmailHTMLBody = (
             <strong>- Province/State:</strong> ${consultantPersonalInfo.state}
         </p>
          <p>
-            <strong>- Scheduled Time (Consultant Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
+            <strong>- Scheduled Time:</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ_IANA)} - ${consultantPersonalInfo.consultantTZ}
         </p>
     </div>
 
@@ -195,10 +196,13 @@ const getAdvisorEmailHTMLBody = (
             <strong>- Country:</strong> ${data.contact.country}
         </p>
         <p>
-            <strong>- Scheduled Time (Your Timezone):</strong> ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ)} (${consultantPersonalInfo.consultantTZ})
+            <strong>- Scheduled Time:</strong>
         </p>
         <p>
-            <strong>- Scheduled Time (Client Timezone):</strong> ${convertUTCToTimeZone(data.slot, data.userTZ)} (${data.userTZ})
+            ${convertUTCToTimeZone(data.slot, consultantPersonalInfo.consultantTZ_IANA)} - ${consultantPersonalInfo.consultantTZ}
+        </p>
+        <p>
+            ${convertUTCToTimeZone(data.slot, data.userTZ_IANA)} - ${data.userTZ}
         </p>
         <p>
             <strong>- Duration:</strong> 30 minutes
@@ -267,7 +271,8 @@ const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
     const sessions_remaining = subscription.sessionsPurchased! - session_number;
     const newSessionData = {
       ...payload,
-      providerTZ: scheduleConfig?.providerTimezone,
+      consultantTZ: scheduleConfig?.consultantTZ,
+      consultantTZ_IANA: scheduleConfig?.consultantTZ_IANA,
       session_duration: scheduleConfig?.slotDurationMinutes,
       slot: slotUTC,
       session_number,
@@ -326,7 +331,8 @@ const bookConsultationSessionIntoDB = async (payload: IConsultationSession) => {
       email: scheduleConfig.email,
       country: scheduleConfig.country,
       state: scheduleConfig.state,
-      consultantTZ: scheduleConfig.providerTimezone,
+      consultantTZ: scheduleConfig.consultantTZ,
+      consultantTZ_IANA: scheduleConfig.consultantTZ_IANA,
     };
     const customreZeptoRes = await sendUserEmail({
       to: [{ address: payload.contact.email, name: payload.contact.name }],

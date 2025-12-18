@@ -15,16 +15,23 @@ export interface IWorkingHour {
   end: string; // "HH:mm"
 }
 
-export interface ITimeRange {
-  start: string; // "HH:mm"
-  end: string; // "HH:mm"
-  day?: DayName; // optional: if not provided, applies to all days (used for breaks with day) or provide date-specific ranges via disabledTimeRanges
+export interface IBreak {
+  day: DayName;
+  start: string;
+  end: string;
+  reason: string;
 }
 
-export interface IDisabledTimeRange {
-  date: string; // ISO date 'YYYY-MM-DD' (provider local date)
-  start: string; // 'HH:mm'
-  end: string; // 'HH:mm'
+export interface IBlockedDate {
+  date: string;
+  reason: string;
+}
+
+export interface IBlockedTimeRange {
+  date: string;
+  start: string;
+  end: string;
+  reason: string;
 }
 
 export interface IConsultationScheduleConfig {
@@ -32,13 +39,14 @@ export interface IConsultationScheduleConfig {
   email: string;
   country: string;
   state: string;
-  providerId?: Types.ObjectId | null; // optional for global config
-  providerTimezone: string; // e.g. 'America/Toronto'
-  slotDurationMinutes: number; // e.g. 30
-  workingHours: IWorkingHour[]; // weekly working hours
-  breaks: Array<{ day: DayName; start: string; end: string }>; // recurring breaks per weekday
-  disabledDates: string[]; // array of ISO local dates (provider tz) like '2025-12-25'
-  disabledTimeRanges: IDisabledTimeRange[]; // date specific disabled ranges
+  providerId?: Types.ObjectId | null;
+  consultantTZ: string;
+  consultantTZ_IANA: string;
+  slotDurationMinutes: number;
+  workingHours: IWorkingHour[];
+  breaks: IBreak[];
+  blockedDates: IBlockedDate[];
+  blockedTimeRanges: IBlockedTimeRange[];
   active: boolean;
   createdAt: Date;
   updatedAt: Date;
