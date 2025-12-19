@@ -11,6 +11,7 @@ import { USER_ROLE } from './user.constant';
 // user → normal site visitor / data submitter
 
 export interface TUser {
+  name:string;
   email: string;
   password: string;
   needsPasswordChange: boolean;

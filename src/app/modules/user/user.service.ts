@@ -26,6 +26,8 @@ const createAdminIntoDB = async (
 
   //set admin email
   userData.email = payload.email;
+  //set admin name
+  userData.name = payload.name;
   const session = await mongoose.startSession();
 
   try {
