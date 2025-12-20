@@ -20,6 +20,7 @@ export default {
   super_admin_password: process.env.SUPER_ADMIN_PASSWORD,
   reset_pass_ui_link: process.env.RESET_PASS_UI_LINK,
   bcrypt_salt_rounds: process.env.BCRYPT_SALT_ROUNDS,
+  otp_bcrypt_salt_rounds: process.env.OTP_BCRYPT_SALT_ROUNDS,
 
   // Stripe
   stripe_secret_key: process.env.STRIPE_SECRET_KEY,

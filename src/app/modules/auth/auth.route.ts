@@ -28,7 +28,7 @@ router.post(
 router.post(
   '/send-otp',
   validateRequest(AuthValidation.sendOTPValidationSchema),
-  AuthControllers.sendOTPMail,
+  AuthControllers.generateAndSendOTP,
 );
 
 router.post(

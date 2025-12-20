@@ -45,9 +45,9 @@ const logoutUser = catchAsync(async (req, res) => {
   });
 });
 
-const sendOTPMail = catchAsync(async (req, res) => {
+const generateAndSendOTP = catchAsync(async (req, res) => {
   const { email } = req.body;
-  const result = await AuthServices.sendOTPMailFromDB(email as string);
+  const result = await AuthServices.generateAndSendOTPFromDB(email as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -70,12 +70,8 @@ const verifyOTP = catchAsync(async (req, res) => {
 });
 
 const resetPasword = catchAsync(async (req, res) => {
-  const { email, otp, newPassword } = req.body;
-  const result = await AuthServices.resetPasswordFromDB(
-    email,
-    otp,
-    newPassword,
-  );
+  const { email, newPassword } = req.body;
+  const result = await AuthServices.resetPasswordFromDB(email, newPassword);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -88,7 +84,7 @@ const resetPasword = catchAsync(async (req, res) => {
 export const AuthControllers = {
   loginUser,
   refreshToken,
-  sendOTPMail,
+  generateAndSendOTP,
   verifyOTP,
   resetPasword,
   logoutUser,

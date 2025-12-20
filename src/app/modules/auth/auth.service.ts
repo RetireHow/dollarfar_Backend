@@ -6,11 +6,11 @@ import AppError from '../../errors/AppError';
 import { TLoginUser } from './auth.interface';
 import { createToken, verifyToken } from './auth.utils';
 import { User } from '../user/user.model';
-import crypto from 'crypto';
-import { OTPModel } from '../otp/otp.model';
 import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
+import { OTP } from '../otp/otp.model';
+import { TOTP } from '../otp/otp.interface';
 
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
@@ -124,61 +124,135 @@ const refreshToken = async (token: string) => {
   };
 };
 
-const sendOTPMailFromDB = async (email: string) => {
+const generateAndSendOTPFromDB = async (email: string) => {
   const existingUser = await User.findOne({ email });
   if (!existingUser) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
   }
 
-  const otp = crypto.randomInt(100000, 999999).toString();
+  // Check cooldown period
+  const recentOTP = (await OTP.findOne({
+    email,
+    purpose: 'password-reset',
+    createdAt: {
+      $gte: new Date(Date.now() - 60 * 1000),
+    },
+  }).sort({ createdAt: -1 })) as TOTP;
 
-  const createdOTP = await OTPModel.findOneAndUpdate(
+  if (recentOTP) {
+    const secondsLeft = Math.ceil(
+      (60 * 1000 - (Date.now() - new Date(recentOTP.createdAt).getTime())) /
+        1000,
+    );
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Please wait ${secondsLeft} seconds before requesting a new OTP`,
+    );
+  }
+
+  // Generate OTP
+  const otp = OTP.generateOTP();
+  const otpHashed = await OTP.createHashedOTP(email, otp);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); //OTP will expire after 5 minutes
+
+  const { purpose } = (await OTP.findOneAndUpdate(
     { email },
-    { email, otp, isVerified: false },
+    { email, otpHashed, expiresAt, purpose: 'password-reset' },
     { upsert: true, new: true },
-  );
+  )) as TOTP;
 
   // Send OTP Mail
   const zeptoRes = await sendTemplatedEmail({
     templateKey:
       '3b2f8.24630c2170da85ea.k1.ed955e60-15f7-11f0-b652-2655081e6903.1961f478746',
-    to: [{ address: email, name: '' }],
+    to: [{ address: email, name: existingUser?.name }],
     mergeInfo: {
-      name: '',
+      name: existingUser?.name,
       otp: otp,
     },
   });
+
   if (zeptoRes.error) {
     throw zeptoRes.error;
   }
 
-  return createdOTP;
+  return {
+    email,
+    expiresAt,
+    purpose,
+    otpHashed, // Only for development/testing
+  };
 };
 
-const verifyOTPFromDB = async (email: string, otpCode: string) => {
+const verifyOTPFromDB = async (email: string, inputOTP: string) => {
   const existingUser = await User.findOne({ email });
   if (!existingUser) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
   }
 
-  const otpRecord = await OTPModel.findOne({ email, otp: otpCode });
-  if (!otpRecord) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid OTP!');
+  //Check if OTP is already verified
+  const isAlreadyVerified = await OTP.findOne({
+    email,
+    purpose: 'password-reset',
+    expiresAt: { $gt: new Date() },
+    verifiedAt: { $exists: true },
+  }).sort({ createdAt: -1 });
+
+  if (isAlreadyVerified) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'This OTP is already verfied. Please generate new one & try again.',
+    );
   }
 
-  const updatedOtp = await OTPModel.findByIdAndUpdate(
-    { _id: otpRecord._id },
-    { isVerified: true },
+  // Find the most recent valid OTP
+  const otpRecord = await OTP.findOne({
+    email,
+    purpose: 'password-reset',
+    expiresAt: { $gt: new Date() },
+    verifiedAt: { $exists: false },
+  }).sort({ createdAt: -1 });
+
+  if (!otpRecord) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Invalid OTP or OTP Expired');
+  }
+
+  // Check max attempts
+  if (otpRecord.hasExceededAttempts()) {
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      'Too many attempts. Please request a new OTP',
+    );
+  }
+
+  // Check expiry
+  if (otpRecord.isExpired()) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'OTP has expired');
+  }
+
+  // Verify OTP using bcrypt
+  const isValid = await otpRecord.verifyOTP(inputOTP);
+
+  if (!isValid) {
+    await otpRecord.incrementAttempts();
+    const attemptsLeft = otpRecord.maxAttempts - otpRecord.attempts;
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      `Invalid OTP. ${attemptsLeft} attempt(s) left`,
+    );
+  }
+
+  // Mark as verified
+  const res = (await OTP.findOneAndUpdate(
+    { email, verifiedAt: { $exists: false }, purpose: 'password-reset' },
+    { verifiedAt: new Date() },
     { new: true },
-  ); // Delete OTP after successful verification
-  return updatedOtp;
+  )) as TOTP;
+
+  return res;
 };
 
-const resetPasswordFromDB = async (
-  email: string,
-  otpCode: string,
-  newPassword: string,
-) => {
+const resetPasswordFromDB = async (email: string, newPassword: string) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
@@ -209,11 +283,20 @@ const resetPasswordFromDB = async (
       Number(config.bcrypt_salt_rounds),
     );
 
-    const otpRecord = await OTPModel.findOne({ email, otp: otpCode }).session(
-      session,
-    );
-    if (!otpRecord) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Invalid OTP!');
+    //Check if OTP is verified
+    const isAlreadyVerified = await OTP.findOne({
+      email,
+      purpose: 'password-reset',
+      expiresAt: { $gt: new Date() },
+      maxAttempts: { $lte: 3 },
+      verifiedAt: { $exists: true },
+    }).sort({ createdAt: -1 });
+
+    if (!isAlreadyVerified) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'Invalid OTP. Verify OTP first & try again.',
+      );
     }
 
     // Prevent using the same old password
@@ -243,9 +326,9 @@ const resetPasswordFromDB = async (
       );
     }
 
-    // Delete OTP (transaction-2)
-    const deletedOtp = await OTPModel.deleteOne({
-      _id: otpRecord._id,
+    // Delete OTP Manually (transaction-2)
+    const deletedOtp = await OTP.deleteMany({
+      email,
     }).session(session); // Delete OTP after successful verification
 
     if (deletedOtp.deletedCount === 0) {
@@ -268,7 +351,7 @@ const resetPasswordFromDB = async (
 export const AuthServices = {
   loginUser,
   refreshToken,
-  sendOTPMailFromDB,
+  generateAndSendOTPFromDB,
   verifyOTPFromDB,
   resetPasswordFromDB,
   logoutUserFromDB,
