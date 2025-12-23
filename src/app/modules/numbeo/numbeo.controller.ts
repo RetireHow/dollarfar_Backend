@@ -36,20 +36,6 @@ const getCityPrices = catchAsync(async (req, res) => {
   });
 });
 
-const getCityPricesByCity = catchAsync(async (req, res) => {
-  const { city, currency } = req.query;
-  const result = await NumbeoServices.getCityPricesByCityFromDB({
-    city,
-    currency,
-  } as CityPricesQueryParams);
-
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'City prices are retrieved successfully',
-    data: result,
-  });
-});
 
 const getExchangeRates = catchAsync(async (req, res) => {
   const result = await NumbeoServices.getExchangeRatesFromDB();
@@ -173,7 +159,6 @@ const getCityTraffic = catchAsync(async (req, res) => {
 export const NumbeoControllers = {
   getAllCities,
   getCityPrices,
-  getCityPricesByCity,
   getExchangeRates,
   getCityCostEstimator,
   getCloseCitiesWithPrice,

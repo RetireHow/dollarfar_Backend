@@ -5,7 +5,6 @@ const router = express.Router();
 
 router.get('/all-cities', NumbeoControllers.getAllCities);
 router.get('/city-prices', NumbeoControllers.getCityPrices);
-router.get('/city-prices-by-city', NumbeoControllers.getCityPricesByCity);
 router.get('/exchange-rates', NumbeoControllers.getExchangeRates);
 router.get('/city-cost-esitmator', NumbeoControllers.getCityCostEstimator);
 router.get(

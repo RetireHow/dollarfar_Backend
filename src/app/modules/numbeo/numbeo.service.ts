@@ -32,16 +32,8 @@ const getAllCitiesFromDB = async (term: string) => {
 };
 
 const getCityPricesFromDB = async (query: CityPricesQueryParams) => {
-  const { city, country, currency } = query;
-
-  const result = await axios.get(
-    `https://www.numbeo.com/api/city_prices?api_key=${config.numbeo_api_key}&query=${city},${country}&currency=${currency}`,
-  );
-  return result?.data;
-};
-
-const getCityPricesByCityFromDB = async (query: CityPricesQueryParams) => {
   const { city, currency } = query;
+
   const result = await axios.get(
     `https://www.numbeo.com/api/city_prices?api_key=${config.numbeo_api_key}&query=${city}&currency=${currency}`,
   );
@@ -58,10 +50,10 @@ const getExchangeRatesFromDB = async () => {
 const getCityCostEstimatorFromDB = async (
   query: CityCostEstimatorQueryParams,
 ) => {
-  const { country, city, members, children, isRent, currency } = query;
+  const { city, members, children, isRent, currency } = query;
 
   const result = await axios.get(
-    `https://www.numbeo.com/api/city_cost_estimator?api_key=${config.numbeo_api_key}&query=${city},${country}&household_members=${members}&children=${children}&include_rent=${isRent}&currency=${currency}`,
+    `https://www.numbeo.com/api/city_cost_estimator?api_key=${config.numbeo_api_key}&query=${city}&household_members=${members}&children=${children}&include_rent=${isRent}&currency=${currency}`,
   );
   return result?.data;
 };
@@ -70,9 +62,9 @@ const getCloseCitiesWithPriceFromDB = async (query: {
   country: string;
   city: string;
 }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/close_cities_with_prices?api_key=${config.numbeo_api_key}&query=${city},${country}&min_contributors=2&max_distance=10000`,
+    `https://www.numbeo.com/api/close_cities_with_prices?api_key=${config.numbeo_api_key}&query=${city}&min_contributors=2&max_distance=10000`,
   );
   return result?.data;
 };
@@ -81,17 +73,17 @@ const getCityIndicesFromDB = async (query: {
   country: string;
   city: string;
 }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/indices?api_key=${config.numbeo_api_key}&query=${city},${country}`,
+    `https://www.numbeo.com/api/indices?api_key=${config.numbeo_api_key}&query=${city}`,
   );
   return result?.data;
 };
 
 const getCityCrimeFromDB = async (query: { country: string; city: string }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/city_crime?api_key=${config.numbeo_api_key}&query=${city},${country}`,
+    `https://www.numbeo.com/api/city_crime?api_key=${config.numbeo_api_key}&query=${city}`,
   );
   return result?.data;
 };
@@ -100,9 +92,9 @@ const getCityHealthCareFromDB = async (query: {
   country: string;
   city: string;
 }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/city_healthcare?api_key=${config.numbeo_api_key}&query=${city},${country}`,
+    `https://www.numbeo.com/api/city_healthcare?api_key=${config.numbeo_api_key}&query=${city}`,
   );
   return result?.data;
 };
@@ -111,9 +103,9 @@ const getCityPollutionFromDB = async (query: {
   country: string;
   city: string;
 }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/city_pollution?api_key=${config.numbeo_api_key}&query=${city},${country}`,
+    `https://www.numbeo.com/api/city_pollution?api_key=${config.numbeo_api_key}&query=${city}`,
   );
   return result?.data;
 };
@@ -122,9 +114,9 @@ const getCityTrafficFromDB = async (query: {
   country: string;
   city: string;
 }) => {
-  const { country, city } = query;
+  const { city } = query;
   const result = await axios.get(
-    `https://www.numbeo.com/api/city_traffic?api_key=${config.numbeo_api_key}&query=${city},${country}`,
+    `https://www.numbeo.com/api/city_traffic?api_key=${config.numbeo_api_key}&query=${city}`,
   );
   return result?.data;
 };
@@ -132,7 +124,6 @@ const getCityTrafficFromDB = async (query: {
 export const NumbeoServices = {
   getAllCitiesFromDB,
   getCityPricesFromDB,
-  getCityPricesByCityFromDB,
   getExchangeRatesFromDB,
   getCityCostEstimatorFromDB,
   getCloseCitiesWithPriceFromDB,
