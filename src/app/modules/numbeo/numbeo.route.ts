@@ -17,4 +17,7 @@ router.get('/city-healthcare', NumbeoControllers.getCityHealthCare);
 router.get('/city-pollution', NumbeoControllers.getCityPollution);
 router.get('/city-traffic', NumbeoControllers.getCityTraffic);
 
+router.post('/log', NumbeoControllers.logRecentComparison);
+router.get('/recent', NumbeoControllers.getRecentComparisons);
+
 export const NumbeoRoutes = router;

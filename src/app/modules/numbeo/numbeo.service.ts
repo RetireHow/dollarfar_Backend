@@ -2,21 +2,13 @@ import axios from 'axios';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
 import config from '../../config';
-
-export interface CityPricesQueryParams {
-  city: string;
-  country: string;
-  currency: string;
-}
-
-export interface CityCostEstimatorQueryParams {
-  country: string;
-  city: string;
-  members: string;
-  children: string;
-  isRent: string;
-  currency: string;
-}
+import {
+  CityCostEstimatorQueryParams,
+  CityPricesQueryParams,
+  TRecentComparison,
+} from './numbeo.interface';
+import { RecentComparison } from './numbeo.model';
+import { calculateDifference, getCityIndices } from './numbe.utils';
 
 const getAllCitiesFromDB = async (term: string) => {
   if (!term) {
@@ -121,6 +113,64 @@ const getCityTrafficFromDB = async (query: {
   return result?.data;
 };
 
+const logRecentComparisonIntoDB = async (payload: TRecentComparison) => {
+  const { cityA, cityB } = payload;
+
+  // before insert
+  const exists = await RecentComparison.findOne({
+    cityA,
+    cityB,
+    createdAt: { $gte: new Date(Date.now() - 60 * 1000) },
+  });
+
+  if (exists) return null;
+
+  const res = await RecentComparison.create(payload);
+  return res;
+};
+
+const getRecentComparisonsFromDB = async () => {
+  const comparisons = await RecentComparison.find({})
+    .sort({ createdAt: -1 })
+    .limit(5)
+    .lean();
+
+  // 1. Collect unique cities
+  const uniqueCities = new Set<string>();
+  comparisons.forEach(c => {
+    uniqueCities.add(c.cityA);
+    uniqueCities.add(c.cityB);
+  });
+
+  // 2. Fetch indices once per city
+  const cityIndexMap = new Map<string, number>();
+
+  await Promise.all(
+    Array.from(uniqueCities).map(async city => {
+      const data = await getCityIndices(city);
+      cityIndexMap.set(city, data.cost_of_living_plus_rent_index);
+    }),
+  );
+
+  // 3. Enrich comparisons (NO HTML)
+  const enriched = comparisons.map(item => {
+    const indexA = cityIndexMap.get(item.cityA)!;
+    const indexB = cityIndexMap.get(item.cityB)!;
+
+    const diff = calculateDifference(indexA, indexB);
+    const absDiff = Number(Math.abs(diff).toFixed(2));
+
+    return {
+      ...item,
+      percentage: absDiff,
+      relation: diff > 0 ? 'more expensive' : 'cheaper',
+      reference: 'cityB', // optional but explicit
+    };
+  });
+
+  return enriched;
+};
+
 export const NumbeoServices = {
   getAllCitiesFromDB,
   getCityPricesFromDB,
@@ -132,4 +182,6 @@ export const NumbeoServices = {
   getCityHealthCareFromDB,
   getCityPollutionFromDB,
   getCityTrafficFromDB,
+  logRecentComparisonIntoDB,
+  getRecentComparisonsFromDB,
 };

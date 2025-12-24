@@ -2,11 +2,9 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import {
-  CityCostEstimatorQueryParams,
-  CityPricesQueryParams,
   NumbeoServices,
 } from './numbeo.service';
-
+import { CityCostEstimatorQueryParams, CityPricesQueryParams } from './numbeo.interface';
 
 const getAllCities = catchAsync(async (req, res) => {
   const { term } = req.query;
@@ -35,7 +33,6 @@ const getCityPrices = catchAsync(async (req, res) => {
     data: result,
   });
 });
-
 
 const getExchangeRates = catchAsync(async (req, res) => {
   const result = await NumbeoServices.getExchangeRatesFromDB();
@@ -156,6 +153,28 @@ const getCityTraffic = catchAsync(async (req, res) => {
   });
 });
 
+const logRecentComparison = catchAsync(async (req, res) => {
+  const result = await NumbeoServices.logRecentComparisonIntoDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'City pares are logged successfully',
+    data: result,
+  });
+});
+
+const getRecentComparisons = catchAsync(async (req, res) => {
+  const result = await NumbeoServices.getRecentComparisonsFromDB();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Recent comparisons are retrieved successfully',
+    data: result,
+  });
+});
+
 export const NumbeoControllers = {
   getAllCities,
   getCityPrices,
@@ -166,5 +185,8 @@ export const NumbeoControllers = {
   getCityCrime,
   getCityHealthCare,
   getCityPollution,
-  getCityTraffic
+  getCityTraffic,
+
+  logRecentComparison,
+  getRecentComparisons,
 };
