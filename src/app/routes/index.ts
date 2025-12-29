@@ -4,23 +4,25 @@ import { AdminRoutes } from '../modules/admin/admin.route';
 import { ReportDownloadedUserRoutes } from '../modules/reportDownloadedUser/reportDownloadedUser.route';
 import { EbookDownloadedUserRoutes } from '../modules/ebookDownloadedUser/ebookDownloadedUser.route';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
-import { AndexRoutes } from '../modules/andex/andex.route';
 import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retirementPlanNotes.route';
 import { UserRoutes } from '../modules/user/user.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
-import { AdminRoutes } from '../modules/admin/admin.route';
+import { RetirementNextStepPlanRoutes } from '../modules/retirementNextStepPlan/retirementNextStepPlan.route';
+import { RetirementPlanEmailRoutes } from '../modules/retirementPlanEmail/retirementPlanEmail.route';
+import { ConsultationSessionRoutes } from '../modules/consultationSession/consultationSession.route';
+import { ConsultationSubscriptionRoutes } from '../modules/consultationSubscription/consultationSubscription.route';
+import { ConsultationScheduleConfigRoutes } from '../modules/consultationScheduleConfig/consultationScheduleConfig.route';
 
 const router = Router();
 
 const moduleRoutes = [
   {
+    path: '/numbeo',
+    route: NumbeoRoutes,
+  },
+  {
     path: '/users',
     route: UserRoutes,
-  },
-
-  {
-    path: '/auth',
-    route: AuthRoutes,
   },
   {
     path: '/admins',
@@ -61,10 +63,6 @@ const moduleRoutes = [
   {
     path: '/retirement-plan-email',
     route: RetirementPlanEmailRoutes,
-  },
-  {
-    path: '/andex',
-    route: AndexRoutes,
   },
   {
     path: '/auth',

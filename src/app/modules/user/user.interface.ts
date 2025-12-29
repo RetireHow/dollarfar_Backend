@@ -2,6 +2,14 @@
 import { Model } from 'mongoose';
 import { USER_ROLE } from './user.constant';
 
+// superAdmin → manages everything (admins, users, dashboard)
+
+// admin → manages user-submitted data
+
+// moderator → read-only dashboard access
+
+// user → normal site visitor / data submitter
+
 export interface TUser {
   name:string;
   email: string;
