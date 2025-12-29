@@ -8,9 +8,9 @@ import { createToken, verifyToken } from './auth.utils';
 import { User } from '../user/user.model';
 import mongoose from 'mongoose';
 import { Request, Response } from 'express';
-import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
 import { OTP } from '../otp/otp.model';
 import { TOTP } from '../otp/otp.interface';
+import { sendEmail } from '../../utils/sendEmail';
 
 const loginUser = async (payload: TLoginUser) => {
   // checking if the user is exist
@@ -162,19 +162,7 @@ const generateAndSendOTPFromDB = async (email: string) => {
   )) as TOTP;
 
   // Send OTP Mail
-  const zeptoRes = await sendTemplatedEmail({
-    templateKey:
-      '3b2f8.24630c2170da85ea.k1.ed955e60-15f7-11f0-b652-2655081e6903.1961f478746',
-    to: [{ address: email, name: existingUser?.name }],
-    mergeInfo: {
-      name: existingUser?.name,
-      otp: otp,
-    },
-  });
-
-  if (zeptoRes.error) {
-    throw zeptoRes.error;
-  }
+  sendEmail(email, otp);
 
   return {
     email,

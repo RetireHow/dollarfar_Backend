@@ -5,7 +5,7 @@ import { loadJobs } from './jobs';
 export const agenda = new Agenda({
   db: {
     address: config.mongodb_url!,
-    collection: 'consultationSubscriptionJobs',
+    collection: 'demo',
   },
 });
 
