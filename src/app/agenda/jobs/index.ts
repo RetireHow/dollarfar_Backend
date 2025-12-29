@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { defineExpireConsultationSubscriptionJob } from './expireConsultationSubscription.job';
+import { defineExpireDemoJob } from './expireDemo.job';
 
 export const loadJobs = (agenda: any) => {
-  defineExpireConsultationSubscriptionJob(agenda);
+  defineExpireDemoJob(agenda);
 };
