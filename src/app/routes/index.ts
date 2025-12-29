@@ -4,7 +4,6 @@ import { AdminRoutes } from '../modules/admin/admin.route';
 import { ReportDownloadedUserRoutes } from '../modules/reportDownloadedUser/reportDownloadedUser.route';
 import { EbookDownloadedUserRoutes } from '../modules/ebookDownloadedUser/ebookDownloadedUser.route';
 import { FeedbackRoutes } from '../modules/feedback/feedback.route';
-import { AndexRoutes } from '../modules/andex/andex.route';
 import { RetirementPlanNotesRoutes } from '../modules/retirementPlanNotes/retirementPlanNotes.route';
 import { UserRoutes } from '../modules/user/user.route';
 import { AuthRoutes } from '../modules/auth/auth.route';
@@ -64,10 +63,6 @@ const moduleRoutes = [
   {
     path: '/retirement-plan-email',
     route: RetirementPlanEmailRoutes,
-  },
-  {
-    path: '/andex',
-    route: AndexRoutes,
   },
   {
     path: '/auth',
