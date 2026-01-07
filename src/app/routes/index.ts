@@ -12,17 +12,22 @@ import { RetirementPlanEmailRoutes } from '../modules/retirementPlanEmail/retire
 import { ConsultationSessionRoutes } from '../modules/consultationSession/consultationSession.route';
 import { ConsultationSubscriptionRoutes } from '../modules/consultationSubscription/consultationSubscription.route';
 import { ConsultationScheduleConfigRoutes } from '../modules/consultationScheduleConfig/consultationScheduleConfig.route';
+import { POCInterestRoutes } from '../modules/POCInterest/POCInterest.route';
 
 const router = Router();
 
 const moduleRoutes = [
   {
-    path: '/numbeo',
-    route: NumbeoRoutes,
-  },
-  {
     path: '/users',
     route: UserRoutes,
+  },
+  {
+    path: '/auth',
+    route: AuthRoutes,
+  },
+  {
+    path: '/numbeo',
+    route: NumbeoRoutes,
   },
   {
     path: '/admins',
@@ -65,8 +70,8 @@ const moduleRoutes = [
     route: RetirementPlanEmailRoutes,
   },
   {
-    path: '/auth',
-    route: AuthRoutes,
+    path: '/poc-interest',
+    route: POCInterestRoutes,
   },
 ];
 

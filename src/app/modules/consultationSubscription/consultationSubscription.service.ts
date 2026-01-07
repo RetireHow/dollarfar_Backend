@@ -9,7 +9,7 @@ import { sendTemplatedEmail } from '../../utils/sendTemplatedEmail';
 import { ConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.model';
 import { IConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.interface';
 
-const stripe = new Stripe(config.stripe_secret_key as string);
+const stripe = new Stripe(config.stripe_secret_key_test as string);
 
 const createConsultationSubscriptionPaymentIntentFromDB = async (payload: {
   name: string;
@@ -42,7 +42,7 @@ const handleConsultationSubscriptionSuccessWebhookIntoDB = async (req: any) => {
     event = stripe.webhooks.constructEvent(
       req.body,
       sig,
-      config.stripe_consultation_subscribe_webhook_secret as string,
+      config.stripe_webhook_secret_key_test as string,
     );
   } catch (err: any) {
     console.error('Webhook signature verification failed.', err.message);
