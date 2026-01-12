@@ -41,8 +41,20 @@ const removeRetirementPlanEmail = catchAsync(async (req, res) => {
   });
 });
 
+const sendCustomEmail = catchAsync(async (req, res) => {
+  await RetirementPlanEmailServices.sendCustomEmailFromDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Email is sent successfully.',
+    data: null,
+  });
+});
+
 export const RetirementPlanEmailControllers = {
   createRetirementPlanEmail,
   getRetirementPlanEmails,
   removeRetirementPlanEmail,
+  sendCustomEmail,
 };

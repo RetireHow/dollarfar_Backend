@@ -28,4 +28,6 @@ router.delete(
   RetirementPlanEmailControllers.removeRetirementPlanEmail,
 );
 
+router.post('/send-email', RetirementPlanEmailControllers.sendCustomEmail);
+
 export const RetirementPlanEmailRoutes = router;

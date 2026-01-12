@@ -7,6 +7,8 @@ import { RetirementNextStepModel } from '../retirementNextStepPlan/retirementNex
 import { TRetirementNextStep } from '../retirementNextStepPlan/retirementNextStepPlan.interface';
 import { User } from '../user/user.model';
 import { TUser } from '../user/user.interface';
+import { ConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.model';
+import { IConsultationScheduleConfig } from '../consultationScheduleConfig/consultationScheduleConfig.interface';
 
 const createRetirementPlanEmailIntoDB = async (
   payload: TRetirementPlanEmail,
@@ -54,8 +56,30 @@ const removeRetirementPlanEmailFromDB = async (id: string) => {
   return res;
 };
 
+const sendCustomEmailFromDB = async (payload: {
+  emailSubject: string;
+  emailBody: string;
+}) => {
+  const { emailSubject, emailBody } = payload;
+  const data =
+    (await ConsultationScheduleConfig.findOne()) as IConsultationScheduleConfig;
+
+  // Send email to advisor
+  const userZeptoRes = await sendUserEmail({
+    to: [{ address: data?.email, name: data?.name }],
+    subject: emailSubject,
+    body: emailBody,
+  });
+
+  if (userZeptoRes.error) {
+    throw userZeptoRes.error;
+  }
+  return null;
+};
+
 export const RetirementPlanEmailServices = {
   createRetirementPlanEmailIntoDB,
   getRetirementPlanEmailsFromDB,
   removeRetirementPlanEmailFromDB,
+  sendCustomEmailFromDB,
 };
