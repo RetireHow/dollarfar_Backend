@@ -2,13 +2,17 @@ import { z } from 'zod';
 
 const createPOCInterestValidationSchema = z.object({
   body: z.object({
-    first_name: z.string({
+    full_name: z.string({
       invalid_type_error: 'First name must be string',
       required_error: 'First name is required',
     }),
     email: z.string({
       invalid_type_error: 'Email must be string',
       required_error: 'Email is required',
+    }),
+    phone: z.string({
+      invalid_type_error: 'Phone must be string',
+      required_error: 'Phone is required',
     }),
     country: z.string().optional(),
     participating_as: z.string().optional(),

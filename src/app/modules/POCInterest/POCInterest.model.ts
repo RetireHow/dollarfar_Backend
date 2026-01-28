@@ -3,12 +3,17 @@ import { IPOCInterest } from './POCInterest.interface';
 
 const POCInterestSchema = new Schema<IPOCInterest>(
   {
-    first_name: {
+    full_name: {
       type: String,
       required: true,
       trim: true,
     },
     email: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    phone: {
       type: String,
       required: true,
       trim: true,
